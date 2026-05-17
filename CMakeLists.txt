@@ -15,7 +15,7 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # 添加可执行文件
-add_executable(bplus_tree_test src/test.cpp)
+add_executable(bplus_tree_test src/code.cpp)
 
 # 包含头文件目录
 target_include_directories(bplus_tree_test PRIVATE include)
