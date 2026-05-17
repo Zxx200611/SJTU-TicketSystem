@@ -48,7 +48,7 @@ int main()
 {
     int q;
     std::cin>>q;
-    bpt.debugPrint();
+    // bpt.debugPrint();
     while(q--)
     {
         std::string op,k;
@@ -74,7 +74,7 @@ int main()
             if(res.empty()) std::cout<<"null";
             std::cout<<'\n';
         }
-        bpt.debugPrint();
+        // bpt.debugPrint();
     }
     std::cout.flush();
 }
