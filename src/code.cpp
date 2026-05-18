@@ -74,26 +74,30 @@ int main()
             if(res.empty()) std::cout<<"null";
             std::cout<<'\n';
         }
+        // std::cout<<"Done"<<std::endl;
         // bpt.debugPrint();
     }
     std::cout.flush();
 }
 /*
-16
-insert aa 1
-insert ab 2
-insert ac 3
-insert ad 4
-insert ba 5
-insert bb 6
-insert bc 7
-insert bd 8
-delete aa 1
-delete ab 2
-delete ac 3
-delete ad 4
-delete ba 5
-delete bb 6
-delete bc 7
-delete bd 8
+14
+delete a 1
+insert b 1
+insert b 3
+insert c 2
+find b
+delete a 2
+insert a 1
+insert c 1
+insert b 2
+insert a 2
+find a
+insert a 3
+find b
+insert c 3
+
+
+1 3 
+1 2 
+1 2 3 
 */

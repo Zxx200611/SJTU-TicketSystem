@@ -17,6 +17,8 @@ Node<T,Compare>::Node(int this_pos,FileOperator &fo) noexcept
 template<typename T,typename Compare>
 Node<T,Compare>& Node<T,Compare>::operator = (const Node<T,Compare> &b)
 {
+    if(&b==this) return *this;
+
     pos=b.pos,ch_cnt=b.ch_cnt,fth=b.fth,nxt=b.nxt;
     for(int i=0;i<ch_cnt;i++) ch_pos[i]=b.ch_pos[i];
     for(int i=0;i<ch_cnt;i++) ch_dat[i]=b.ch_dat[i];
@@ -122,6 +124,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
     {
         u.remove(ips);
         u.write(fo);
+        if(ips==u.ch_cnt&&u.ch_cnt>0) updateAncestors(u.fth,u.pos);
     }
     else
     {
@@ -155,9 +158,13 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
         {
             u.ch_pos[u.ch_cnt+i]=v.ch_pos[i];
             u.ch_dat[u.ch_cnt+i]=v.ch_dat[i];
-            Node<T,Compare> tmp(v.ch_pos[i],fo);
-            tmp.fth=u.pos;
-            tmp.write(fo);
+
+            if(!u.isLeaf())
+            {
+                Node<T,Compare> tmp(v.ch_pos[i],fo);
+                tmp.fth=u.pos;
+                tmp.write(fo);
+            }
         }
         u.ch_cnt+=v.ch_cnt;
         u.write(fo);
@@ -176,8 +183,15 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
         if(ulev)
         {
             u.insert(u.ch_cnt,v.ch_dat[0],v.ch_pos[0]);
+
+            if(v.ch_pos[0]!=0)
+            {
+                Node<T,Compare> tmp(v.ch_pos[0],fo);
+                tmp.fth=u.pos;
+                tmp.write(fo);
+            }
+
             v.remove(0);
-            u.ch_cnt++,v.ch_cnt--;
             u.write(fo),v.write(fo);
 
             updateAncestors(u.fth,u.pos);
@@ -185,8 +199,15 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
         else
         {
             u.insert(0,v.ch_dat[v.ch_cnt-1],v.ch_pos[v.ch_cnt-1]);
+
+            if(v.ch_pos[v.ch_cnt-1]!=0)
+            {
+                Node<T,Compare> tmp(v.ch_pos[v.ch_cnt-1],fo);
+                tmp.fth=u.pos;
+                tmp.write(fo);
+            }
+
             v.remove(v.ch_cnt-1);
-            u.ch_cnt++,v.ch_cnt--;
             u.write(fo),v.write(fo);
 
             updateAncestors(v.fth,v.pos);
