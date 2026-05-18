@@ -46,6 +46,9 @@ std::ostream& operator << (std::ostream &os,const Element &e)
 
 int main()
 {
+    std::ios::sync_with_stdio(0);
+    std::cin.tie(0),std::cout.tie(0);
+
     int q;
     std::cin>>q;
     // bpt.debugPrint();
@@ -80,24 +83,36 @@ int main()
     std::cout.flush();
 }
 /*
-14
-delete a 1
-insert b 1
-insert b 3
-insert c 2
-find b
-delete a 2
-insert a 1
-insert c 1
-insert b 2
-insert a 2
-find a
-insert a 3
-find b
-insert c 3
+23
+insert bc 2
+insert bc 3
+insert ca 1
+insert bc 1
+find cc
+find ab
+find cb
+insert ac 3
+insert aa 1
+insert bb 2
+insert bb 1
+insert ba 1
+find ac
+insert ab 3
+insert bb 3
+insert cb 1
+delete aa 1
+delete ca 1
+find bb
+delete bc 3
+insert aa 3
+delete cc 2
+find bc
 
-
-1 3 
-1 2 
+null
+null
+null
+3 
 1 2 3 
+1 2 
+
 */

@@ -108,6 +108,15 @@ std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcep
         L.ch_cnt=lsz,R.ch_cnt=rsz;
 
         L.write(fo),R.write(fo);
+        if(!R.isLeaf())
+        {
+            for(int i=0;i<R.ch_cnt;i++)
+            {
+                Node<T,Compare> tmp(R.ch_pos[i],fo);
+                tmp.fth=R.pos;
+                tmp.write(fo);
+            }
+        }
         return std::pair<int,int>(L.pos,R.pos);
     }
     u.write(fo);
@@ -122,6 +131,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
     if(u.isLeaf())
     {
+        // std::cout<<"Find deleting element at Node #"<<uid<<" 's "<<ips<<"th pos."<<std::endl;
         u.remove(ips);
         u.write(fo);
         if(ips==u.ch_cnt&&u.ch_cnt>0) updateAncestors(u.fth,u.pos);
@@ -152,6 +162,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
         {
             std::swap(u,v);
         }
+        // std::cout<<"Merge it with Node #"<<vid<<std::endl;
 
         if(u.isLeaf()) u.nxt=v.nxt;
         for(int i=0;i<v.ch_cnt;i++)
@@ -177,6 +188,8 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
             f.remove(f.findPos(v.pos));
             f.write(fo);
         }
+        // std::cout<<"Merged. Below is an testing debug."<<std::endl;
+        // debugPrint();
     }
     else
     {
@@ -259,6 +272,7 @@ BPlusTree<T,Compare>::~BPlusTree() noexcept
 template<typename T,typename Compare>
 void BPlusTree<T,Compare>::insert(const T &t) noexcept
 {
+    siz++;
     std::pair<int,int> pr=innerInsert(rt_pos,t);
     if(pr.first==0) return;
 
@@ -268,7 +282,6 @@ void BPlusTree<T,Compare>::insert(const T &t) noexcept
     w.ch_pos[0]=u.pos,w.ch_dat[0]=u.maxElement();
     w.ch_pos[1]=v.pos,w.ch_dat[1]=v.maxElement();
     u.write(fo),v.write(fo),w.write(fo);
-    siz++;
 }
 template<typename T,typename Compare>
 bool BPlusTree<T,Compare>::remove(const T &t) noexcept
