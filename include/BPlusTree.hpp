@@ -12,7 +12,7 @@ template<typename T,typename Compare>
 class Node
 {
 public:
-    static const int max_ch_cnt=64;    //180
+    static const int max_ch_cnt=50;    //180
     int pos,ch_cnt,ch_pos[max_ch_cnt+1];
     T ch_dat[max_ch_cnt+1];
     int fth,nxt;
