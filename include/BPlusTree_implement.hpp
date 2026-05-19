@@ -154,14 +154,17 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
         u.remove(ips);
         u.write(fo);
         if(ips==u.ch_cnt&&u.ch_cnt>0) updateAncestors(u.fth,u.pos);
+        if(u.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
     }
     else
     {
         innerRemove(u.ch_pos[ips],u.ch_pos[ips==u.ch_cnt-1?ips-1:ips+1],t,ips!=u.ch_cnt-1);
+
+        SemiNode<T,Compare> up(uid,fo);
+        if(up.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
         u=Node<T,Compare>(uid,fo);
     }
 
-    if(u.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
     if(u.pos==rt_pos)
     {
         if(u.ch_cnt==1&&u.ch_pos[0]!=0)
