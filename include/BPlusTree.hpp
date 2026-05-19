@@ -32,7 +32,7 @@ template<typename T,typename Compare>
 class SemiNode
 {
 public:
-    int pos,ch_cnt,nxt,fth;
+    int pos,ch_cnt,fth,nxt;
     static const int memory_size=4+4+4+4;
 
     explicit SemiNode(int this_pos,FileOperator &fo) noexcept;
