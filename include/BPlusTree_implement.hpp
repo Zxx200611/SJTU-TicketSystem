@@ -64,6 +64,19 @@ int Node<T,Compare>::findPos(int p) noexcept
 }
 // Node ***********************************************************
 
+// SemiNode *******************************************************
+template<typename T,typename Compare>
+SemiNode<T,Compare>::SemiNode(int this_pos,FileOperator &fo) noexcept
+{
+    fo.read(this_pos,this);
+}
+template<typename T,typename Compare>
+void SemiNode<T,Compare>::write(FileOperator &fo) noexcept
+{
+    fo.write(pos,this);
+}
+// ****************************************************************
+
 // BPT  ***********************************************************
 
 template<typename T,typename Compare>
@@ -112,7 +125,7 @@ std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcep
         {
             for(int i=0;i<R.ch_cnt;i++)
             {
-                Node<T,Compare> tmp(R.ch_pos[i],fo);
+                SemiNode<T,Compare> tmp(R.ch_pos[i],fo);
                 tmp.fth=R.pos;
                 tmp.write(fo);
             }
@@ -147,7 +160,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
     {
         if(u.ch_cnt==1&&u.ch_pos[0]!=0)
         {
-            Node<T,Compare> tmp(u.ch_pos[0],fo);
+            SemiNode<T,Compare> tmp(u.ch_pos[0],fo);
             tmp.fth=0;
             tmp.write(fo);
             rt_pos=u.ch_pos[0];
@@ -172,7 +185,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(!u.isLeaf())
             {
-                Node<T,Compare> tmp(v.ch_pos[i],fo);
+                SemiNode<T,Compare> tmp(v.ch_pos[i],fo);
                 tmp.fth=u.pos;
                 tmp.write(fo);
             }
@@ -199,7 +212,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(v.ch_pos[0]!=0)
             {
-                Node<T,Compare> tmp(v.ch_pos[0],fo);
+                SemiNode<T,Compare> tmp(v.ch_pos[0],fo);
                 tmp.fth=u.pos;
                 tmp.write(fo);
             }
@@ -215,7 +228,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(v.ch_pos[v.ch_cnt-1]!=0)
             {
-                Node<T,Compare> tmp(v.ch_pos[v.ch_cnt-1],fo);
+                SemiNode<T,Compare> tmp(v.ch_pos[v.ch_cnt-1],fo);
                 tmp.fth=u.pos;
                 tmp.write(fo);
             }

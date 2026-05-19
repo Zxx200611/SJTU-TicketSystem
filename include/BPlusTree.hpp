@@ -13,11 +13,11 @@ class Node
 {
 public:
     static const int max_ch_cnt=60;    //180
-    int pos,ch_cnt,ch_pos[max_ch_cnt+1];
+    int pos,ch_cnt,fth,nxt;
+    int ch_pos[max_ch_cnt+1];
     T ch_dat[max_ch_cnt+1];
-    int fth,nxt;
 
-    static const int memory_size=4+4+(max_ch_cnt+1)*4+(max_ch_cnt+1)*T::memory_size+4+4;
+    static const int memory_size=4+4+4+4+(max_ch_cnt+1)*4+(max_ch_cnt+1)*T::memory_size;
 
     explicit Node(int this_pos,FileOperator &fo) noexcept;
     inline Node& operator = (const Node &b);
@@ -27,6 +27,16 @@ public:
     inline void insert(int p,const T &v,int pos) noexcept;   // insert before p
     inline void remove(int p) noexcept;
     inline int findPos(int p) noexcept;
+};
+template<typename T,typename Compare>
+class SemiNode
+{
+public:
+    int pos,ch_cnt,nxt,fth;
+    static const int memory_size=4+4+4+4;
+
+    explicit SemiNode(int this_pos,FileOperator &fo) noexcept;
+    inline void write(FileOperator &fo) noexcept;
 };
 
 template<typename T,typename Compare>
