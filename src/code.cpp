@@ -5,7 +5,7 @@
 #pragma pack(1)
 struct Element
 {
-    static const int memory_size=64*sizeof(char)+sizeof(long long);
+    static constexpr int memory_size=64*sizeof(char)+sizeof(long long);
 
     char key[64];
     long long val;

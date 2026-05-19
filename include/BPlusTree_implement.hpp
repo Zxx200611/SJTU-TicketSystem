@@ -1,3 +1,5 @@
+#pragma GCC optimize(2)
+
 #include<BPlusTree.hpp>
 
 // Node ***********************************************************
@@ -30,12 +32,12 @@ void Node<T,Compare>::write(FileOperator &fo) noexcept
     fo.write(pos,this);
 }
 template<typename T,typename Compare>
-T Node<T,Compare>::maxElement() noexcept
+constexpr T Node<T,Compare>::maxElement() noexcept
 {
     return ch_dat[ch_cnt-1];
 }
 template<typename T,typename Compare>
-bool Node<T,Compare>::isLeaf() noexcept
+constexpr bool Node<T,Compare>::isLeaf() noexcept
 {
     return ch_pos[0]==0;
 }
@@ -82,14 +84,18 @@ void SemiNode<T,Compare>::write(FileOperator &fo) noexcept
 template<typename T,typename Compare>
 void BPlusTree<T,Compare>::updateAncestors(int uid,int vp) noexcept
 {
-    if(uid==0) return;
+    Node<T,Compare> v(vp,fo);
 
-    Node<T,Compare> u(uid,fo),v(vp,fo);
-    int i=u.findPos(vp);
-    u.ch_dat[i]=v.maxElement();
-    u.write(fo);
+    while(uid!=0)
+    {
+        Node<T,Compare> u(uid,fo);
+        int i=u.findPos(v.pos);
+        u.ch_dat[i]=v.maxElement();
+        u.write(fo);
 
-    if(i==u.ch_cnt-1) updateAncestors(u.fth,uid);
+        if(i!=u.ch_cnt-1) break;
+        v=u,uid=u.fth;
+    }
 }
 template<typename T,typename Compare>
 std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcept
