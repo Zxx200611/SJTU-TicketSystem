@@ -83,13 +83,22 @@ MemoryRiver<T,Compare>::MemoryRiver() noexcept
 template<typename T,typename Compare>
 void MemoryRiver<T,Compare>::readNode(int pos,FileOperator &fo,Node<T,Compare> &dst) noexcept
 {
-    if(mem[pos%M].pos!=pos) fo.read(pos,&mem[pos%M]);
+    if(mem[pos%M].pos!=pos)
+    {
+        if(mem[pos%M].pos!=0) fo.write(mem[pos%M].pos,&mem[pos%M]);
+        fo.read(pos,&mem[pos%M]);
+    }
     dst=mem[pos%M];
 }
 template<typename T,typename Compare>
-void MemoryRiver<T,Compare>::writeNode(const Node<T,Compare> &u,FileOperator &fo) noexcept
+void MemoryRiver<T,Compare>::writeNode(Node<T,Compare> u,FileOperator &fo) noexcept
 {
-    if(mem[u.pos%M].pos!=u.pos) fo.write(mem[u.pos%M].pos,&mem[u.pos%M]);
+    // std::cout<<"Write an node at pos "<<u.pos<<std::endl;
+    if(mem[u.pos%M].pos!=u.pos&&mem[u.pos%M].pos!=0)
+    {
+        fo.write(mem[u.pos%M].pos,&mem[u.pos%M]);
+    }
+    if(u.pos>=fo.size()) fo.write(u.pos,&u);
     mem[u.pos%M]=u;
 }
 // MR *************************************************************

@@ -44,7 +44,7 @@ public:
 
     inline MemoryRiver() noexcept;
     inline void readNode(int pos,FileOperator &fo,Node<T,Compare> &dst) noexcept;
-    inline void writeNode(const Node<T,Compare> &u,FileOperator &fo) noexcept;
+    inline void writeNode(Node<T,Compare> u,FileOperator &fo) noexcept;
 };
 
 template<typename T,typename Compare>
