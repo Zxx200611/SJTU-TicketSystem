@@ -11,34 +11,40 @@
 
 #pragma pack(1)
 template<typename T,typename Compare>
+class MemoryRiver;
+
+template<typename T,typename Compare>
 class Node
 {
 public:
-    static constexpr int max_ch_cnt=50;    //180
+    static constexpr int max_ch_cnt=60;    //60
     int pos,ch_cnt,fth,nxt;
     int ch_pos[max_ch_cnt+1];
     T ch_dat[max_ch_cnt+1];
 
     static constexpr int memory_size=4+4+4+4+(max_ch_cnt+1)*4+(max_ch_cnt+1)*T::memory_size;
 
-    explicit Node(int this_pos,FileOperator &fo) noexcept;
+    explicit Node() noexcept;
+    explicit Node(int this_pos,FileOperator &fo,MemoryRiver<T,Compare> &mr) noexcept;
     inline Node& operator = (const Node &b);
-    inline void write(FileOperator &fo) noexcept;
+    inline void write(FileOperator &fo,MemoryRiver<T,Compare> &mr) noexcept;
     inline constexpr T maxElement() noexcept;
     inline constexpr bool isLeaf() noexcept;
     inline void insert(int p,const T &v,int pos) noexcept;   // insert before p
     inline void remove(int p) noexcept;
     inline int findPos(int p) noexcept;
 };
+
 template<typename T,typename Compare>
-class SemiNode
+class MemoryRiver
 {
 public:
-    int pos,ch_cnt,fth,nxt;
-    static constexpr int memory_size=4+4+4+4;
+    static constexpr int M=4001;
+    Node<T,Compare> mem[M];
 
-    explicit SemiNode(int this_pos,FileOperator &fo) noexcept;
-    inline void write(FileOperator &fo) noexcept;
+    inline MemoryRiver() noexcept;
+    inline void readNode(int pos,FileOperator &fo,Node<T,Compare> &dst) noexcept;
+    inline void writeNode(const Node<T,Compare> &u,FileOperator &fo) noexcept;
 };
 
 template<typename T,typename Compare>
@@ -49,6 +55,7 @@ private:
     int rt_pos,siz;
     FileOperator fo;
     Compare comp;
+    MemoryRiver<T,Compare> mr;
 
     inline void updateAncestors(int uid,int vp) noexcept;
     inline std::pair<int,int> innerInsert(int uid,const T &t) noexcept;

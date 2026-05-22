@@ -4,9 +4,17 @@
 
 // Node ***********************************************************
 template<typename T,typename Compare>
-Node<T,Compare>::Node(int this_pos,FileOperator &fo) noexcept
+Node<T,Compare>::Node() noexcept
 {
-    if(this_pos>=fo.size())
+    pos=0,ch_cnt=0;
+    memset(ch_pos,0,sizeof(ch_pos));
+    for(int i=0;i<=max_ch_cnt;i++) ch_dat[i]=T::zero();
+    fth=nxt=0;
+}
+template<typename T,typename Compare>
+Node<T,Compare>::Node(int this_pos,FileOperator &fo,MemoryRiver<T,Compare> &mr) noexcept
+{
+    if(this_pos>=fo.size()||this_pos==0)
     {
         // std::cout<<"Initializing node"<<std::endl;
         pos=this_pos,ch_cnt=0;
@@ -14,7 +22,7 @@ Node<T,Compare>::Node(int this_pos,FileOperator &fo) noexcept
         for(int i=0;i<=max_ch_cnt;i++) ch_dat[i]=T::zero();
         fth=nxt=0;
     }
-    else fo.read(this_pos,this);
+    else mr.readNode(this_pos,fo,*this);
 }
 template<typename T,typename Compare>
 Node<T,Compare>& Node<T,Compare>::operator = (const Node<T,Compare> &b)
@@ -27,9 +35,9 @@ Node<T,Compare>& Node<T,Compare>::operator = (const Node<T,Compare> &b)
     return *this;
 }
 template<typename T,typename Compare>
-void Node<T,Compare>::write(FileOperator &fo) noexcept
+void Node<T,Compare>::write(FileOperator &fo,MemoryRiver<T,Compare> &mr) noexcept
 {
-    fo.write(pos,this);
+    mr.writeNode(*this,fo);
 }
 template<typename T,typename Compare>
 constexpr T Node<T,Compare>::maxElement() noexcept
@@ -66,32 +74,39 @@ int Node<T,Compare>::findPos(int p) noexcept
 }
 // Node ***********************************************************
 
-// SemiNode *******************************************************
+// MR *************************************************************
 template<typename T,typename Compare>
-SemiNode<T,Compare>::SemiNode(int this_pos,FileOperator &fo) noexcept
+MemoryRiver<T,Compare>::MemoryRiver() noexcept
 {
-    fo.read(this_pos,this);
+    // do nothing
 }
 template<typename T,typename Compare>
-void SemiNode<T,Compare>::write(FileOperator &fo) noexcept
+void MemoryRiver<T,Compare>::readNode(int pos,FileOperator &fo,Node<T,Compare> &dst) noexcept
 {
-    fo.write(pos,this);
+    if(mem[pos%M].pos!=pos) fo.read(pos,&mem[pos%M]);
+    dst=mem[pos%M];
 }
-// ****************************************************************
+template<typename T,typename Compare>
+void MemoryRiver<T,Compare>::writeNode(const Node<T,Compare> &u,FileOperator &fo) noexcept
+{
+    if(mem[u.pos%M].pos!=u.pos) fo.write(mem[u.pos%M].pos,&mem[u.pos%M]);
+    mem[u.pos%M]=u;
+}
+// MR *************************************************************
 
 // BPT  ***********************************************************
 
 template<typename T,typename Compare>
 void BPlusTree<T,Compare>::updateAncestors(int uid,int vp) noexcept
 {
-    Node<T,Compare> v(vp,fo);
+    Node<T,Compare> v(vp,fo,mr);
 
     while(uid!=0)
     {
-        Node<T,Compare> u(uid,fo);
+        Node<T,Compare> u(uid,fo,mr);
         int i=u.findPos(v.pos);
         u.ch_dat[i]=v.maxElement();
-        u.write(fo);
+        u.write(fo,mr);
 
         if(i!=u.ch_cnt-1) break;
         v=u,uid=u.fth;
@@ -100,7 +115,7 @@ void BPlusTree<T,Compare>::updateAncestors(int uid,int vp) noexcept
 template<typename T,typename Compare>
 std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcept
 {
-    Node<T,Compare> u(uid,fo);
+    Node<T,Compare> u(uid,fo,mr);
     int ips=utils::lowerBound(u.ch_dat,u.ch_dat+u.ch_cnt,t,comp)-u.ch_dat;
     assert(ips!=u.ch_cnt);
 
@@ -111,13 +126,13 @@ std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcep
         if(pr.first!=0)
         {
             u.ch_pos[ips]=pr.second;
-            u.insert(ips,Node<T,Compare>(pr.first,fo).maxElement(),pr.first);
+            u.insert(ips,Node<T,Compare>(pr.first,fo,mr).maxElement(),pr.first);
         }
     }
 
     if(u.ch_cnt==Node<T,Compare>::max_ch_cnt+1)
     {
-        Node<T,Compare> &L=u,R(fo.size(),fo);
+        Node<T,Compare> &L=u,R(fo.size(),fo,mr);
         if(L.isLeaf()) R.nxt=L.nxt,L.nxt=R.pos; 
         R.fth=L.fth;
 
@@ -126,25 +141,25 @@ std::pair<int,int> BPlusTree<T,Compare>::innerInsert(int uid,const T &t) noexcep
         for(int i=lsz;i<u.ch_cnt;i++) R.ch_dat[i-lsz]=L.ch_dat[i],L.ch_dat[i]=T::zero();
         L.ch_cnt=lsz,R.ch_cnt=rsz;
 
-        L.write(fo),R.write(fo);
+        L.write(fo,mr),R.write(fo,mr);
         if(!R.isLeaf())
         {
             for(int i=0;i<R.ch_cnt;i++)
             {
-                SemiNode<T,Compare> tmp(R.ch_pos[i],fo);
+                Node<T,Compare> tmp(R.ch_pos[i],fo,mr);
                 tmp.fth=R.pos;
-                tmp.write(fo);
+                tmp.write(fo,mr);
             }
         }
         return std::pair<int,int>(L.pos,R.pos);
     }
-    u.write(fo);
+    u.write(fo,mr);
     return std::pair<int,int>(0,0);
 }
 template<typename T,typename Compare>
 void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noexcept
 {
-    Node<T,Compare> u(uid,fo);
+    Node<T,Compare> u(uid,fo,mr);
     int ips=utils::lowerBound(u.ch_dat,u.ch_dat+u.ch_cnt,t,comp)-u.ch_dat;
     assert(ips!=u.ch_cnt);
 
@@ -152,7 +167,7 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
     {
         // std::cout<<"Find deleting element at Node #"<<uid<<" 's "<<ips<<"th pos."<<std::endl;
         u.remove(ips);
-        u.write(fo);
+        u.write(fo,mr);
         if(ips==u.ch_cnt&&u.ch_cnt>0) updateAncestors(u.fth,u.pos);
         if(u.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
     }
@@ -160,24 +175,23 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
     {
         innerRemove(u.ch_pos[ips],u.ch_pos[ips==u.ch_cnt-1?ips-1:ips+1],t,ips!=u.ch_cnt-1);
 
-        SemiNode<T,Compare> up(uid,fo);
-        if(up.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
-        u=Node<T,Compare>(uid,fo);
+        u=Node<T,Compare>(uid,fo,mr);
+        if(u.ch_cnt>=(Node<T,Compare>::max_ch_cnt)/2) return;
     }
 
     if(u.pos==rt_pos)
     {
         if(u.ch_cnt==1&&u.ch_pos[0]!=0)
         {
-            SemiNode<T,Compare> tmp(u.ch_pos[0],fo);
+            Node<T,Compare> tmp(u.ch_pos[0],fo,mr);
             tmp.fth=0;
-            tmp.write(fo);
+            tmp.write(fo,mr);
             rt_pos=u.ch_pos[0];
         }
         return;
     }
 
-    Node<T,Compare> v(vid,fo);
+    Node<T,Compare> v(vid,fo,mr);
     if(v.ch_cnt+u.ch_cnt<=Node<T,Compare>::max_ch_cnt)
     {
         if(!ulev)    //make sure u<v
@@ -194,21 +208,21 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(!u.isLeaf())
             {
-                SemiNode<T,Compare> tmp(v.ch_pos[i],fo);
+                Node<T,Compare> tmp(v.ch_pos[i],fo,mr);
                 tmp.fth=u.pos;
-                tmp.write(fo);
+                tmp.write(fo,mr);
             }
         }
         u.ch_cnt+=v.ch_cnt;
-        u.write(fo);
+        u.write(fo,mr);
 
         updateAncestors(u.fth,u.pos);
         
         if(u.fth!=0)
         {
-            Node<T,Compare> f(u.fth,fo);
+            Node<T,Compare> f(u.fth,fo,mr);
             f.remove(f.findPos(v.pos));
-            f.write(fo);
+            f.write(fo,mr);
         }
         // std::cout<<"Merged. Below is an testing debug."<<std::endl;
         // debugPrint();
@@ -221,13 +235,13 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(v.ch_pos[0]!=0)
             {
-                SemiNode<T,Compare> tmp(v.ch_pos[0],fo);
+                Node<T,Compare> tmp(v.ch_pos[0],fo,mr);
                 tmp.fth=u.pos;
-                tmp.write(fo);
+                tmp.write(fo,mr);
             }
 
             v.remove(0);
-            u.write(fo),v.write(fo);
+            u.write(fo,mr),v.write(fo,mr);
 
             updateAncestors(u.fth,u.pos);
         }
@@ -237,13 +251,13 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 
             if(v.ch_pos[v.ch_cnt-1]!=0)
             {
-                SemiNode<T,Compare> tmp(v.ch_pos[v.ch_cnt-1],fo);
+                Node<T,Compare> tmp(v.ch_pos[v.ch_cnt-1],fo,mr);
                 tmp.fth=u.pos;
-                tmp.write(fo);
+                tmp.write(fo,mr);
             }
 
             v.remove(v.ch_cnt-1);
-            u.write(fo),v.write(fo);
+            u.write(fo,mr),v.write(fo,mr);
 
             updateAncestors(v.fth,v.pos);
         }
@@ -252,19 +266,19 @@ void BPlusTree<T,Compare>::innerRemove(int uid,int vid,const T &t,bool ulev) noe
 template<typename T,typename Compare>
 std::pair<int,int> BPlusTree<T,Compare>::lowerBound(const T &t) noexcept
 {
-    Node<T,Compare> u(rt_pos,fo);
+    Node<T,Compare> u(rt_pos,fo,mr);
     while(!u.isLeaf())
     {
         int v_id=utils::lowerBound(u.ch_dat,u.ch_dat+u.ch_cnt,t,comp)-u.ch_dat;
         assert(v_id<u.ch_cnt);
-        u=Node<T,Compare>(u.ch_pos[v_id],fo);
+        u=Node<T,Compare>(u.ch_pos[v_id],fo,mr);
     }
     return std::make_pair(u.pos,utils::lowerBound(u.ch_dat,u.ch_dat+u.ch_cnt,t,comp)-u.ch_dat);
 }
 
 
 template<typename T,typename Compare>
-BPlusTree<T,Compare>::BPlusTree(const std::string &file_name) noexcept:comp(),fo(file_name),siz(0)
+BPlusTree<T,Compare>::BPlusTree(const std::string &file_name) noexcept:comp(),fo(file_name),siz(0),mr()
 {
     if(fo.size()!=0)
     {
@@ -274,14 +288,14 @@ BPlusTree<T,Compare>::BPlusTree(const std::string &file_name) noexcept:comp(),fo
     }
 
     // std::cout<<"Initializing BPT"<<std::endl;
-    Node<T,Compare> u(sizeof(int)*2,fo);
+    Node<T,Compare> u(sizeof(int)*2,fo,mr);
     u.ch_cnt=1,u.ch_dat[0]=T::positiveInfinity();
     fo.write(0,&u.pos);
     fo.write(sizeof(int),&siz);
-    u.write(fo);
+    u.write(fo,mr);
     rt_pos=u.pos;
 
-    u=Node<T,Compare>(sizeof(int)*2,fo);
+    // u=Node<T,Compare>(sizeof(int)*2,fo,mr);
     // std::cout<<"root's ch_cnt = "<<u.ch_cnt<<std::endl;
 }
 template<typename T,typename Compare>
@@ -289,6 +303,11 @@ BPlusTree<T,Compare>::~BPlusTree() noexcept
 {
     fo.write(0,&rt_pos);
     fo.write(sizeof(int),&siz);
+
+    for(int i=0;i<MemoryRiver<T,Compare>::M;i++)
+    {
+        if(mr.mem[i].pos!=0) fo.write(mr.mem[i].pos,&mr.mem[i]);
+    }
 }
 
 template<typename T,typename Compare>
@@ -298,18 +317,18 @@ void BPlusTree<T,Compare>::insert(const T &t) noexcept
     std::pair<int,int> pr=innerInsert(rt_pos,t);
     if(pr.first==0) return;
 
-    Node<T,Compare> u(pr.first,fo),v(pr.second,fo),w(fo.size(),fo);
+    Node<T,Compare> u(pr.first,fo,mr),v(pr.second,fo,mr),w(fo.size(),fo,mr);
     rt_pos=u.fth=v.fth=w.pos;
     w.ch_cnt=2;
     w.ch_pos[0]=u.pos,w.ch_dat[0]=u.maxElement();
     w.ch_pos[1]=v.pos,w.ch_dat[1]=v.maxElement();
-    u.write(fo),v.write(fo),w.write(fo);
+    u.write(fo,mr),v.write(fo,mr),w.write(fo,mr);
 }
 template<typename T,typename Compare>
 bool BPlusTree<T,Compare>::remove(const T &t) noexcept
 {
     std::pair<int,int> pr=lowerBound(t);
-    if(comp(t,Node<T,Compare>(pr.first,fo).ch_dat[pr.second])) return 0;
+    if(comp(t,Node<T,Compare>(pr.first,fo,mr).ch_dat[pr.second])) return 0;
 
     innerRemove(rt_pos,0,t,0);
     siz--;
@@ -321,7 +340,7 @@ sjtu::vector<T> BPlusTree<T,Compare>::find(const T &l,const T&r) noexcept
     std::pair<int,int> pr=lowerBound(l);
 
     sjtu::vector<T> res;
-    for(Node<T,Compare> u(pr.first,fo);u.pos;u=Node<T,Compare>(u.nxt,fo))
+    for(Node<T,Compare> u(pr.first,fo,mr);u.pos;u=Node<T,Compare>(u.nxt,fo,mr))
     {
         for(int i=(u.pos==pr.first?pr.second:0);i<u.ch_cnt;i++)
         {
@@ -340,7 +359,7 @@ int BPlusTree<T,Compare>::size() noexcept
 template<typename T,typename Compare>
 void BPlusTree<T,Compare>::innerDebugPrint(int uid) noexcept
 {
-    Node<T,Compare> u(uid,fo);
+    Node<T,Compare> u(uid,fo,mr);
     std::cout<<"Node #"<<uid<<" : pos = "<<u.pos<<" , ch_cnt = "<<u.ch_cnt<<" , fth = "<<u.fth<<" , nxt = "<<u.nxt<<std::endl;
     std::cout<<"     Child pos : ";
     for(int i=0;i<u.ch_cnt;i++) std::cout<<u.ch_pos[i]<<" ";
