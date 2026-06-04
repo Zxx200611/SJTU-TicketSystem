@@ -8,6 +8,8 @@
 #include <cassert>
 #include <string>
 #include <utility>
+#include<cstring>
+
 
 
 #pragma pack(1)
