@@ -1,2 +1,8 @@
 build
 test
+testcases
+src/code.cpp.bak
+run-test
+code
+CMakeLists.txt.bak
+test-*

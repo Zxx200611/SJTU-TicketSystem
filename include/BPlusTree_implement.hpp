@@ -1,7 +1,7 @@
 #pragma GCC optimize(2)
 
 #include <BPlusTree.hpp>
-
+#pragma pack(1)
 // Node ***********************************************************
 template <typename T, typename Compare> Node<T, Compare>::Node() noexcept {
   pos = 0, ch_cnt = 0;
@@ -80,6 +80,10 @@ int Node<T, Compare>::findPos(int p) noexcept {
 template <typename T, typename Compare>
 MemoryRiver<T, Compare>::MemoryRiver() noexcept {
   // do nothing
+}
+template <typename T, typename Compare>
+void MemoryRiver<T, Compare>::clear() noexcept {
+  std::memset(mem,0,sizeof(mem));
 }
 template <typename T, typename Compare>
 void MemoryRiver<T, Compare>::readNode(int pos, FileOperator &fo,
@@ -287,9 +291,11 @@ BPlusTree<T, Compare>::BPlusTree(const std::string &file_name) noexcept
     return;
   }
 
-  // std::cout<<"Initializing BPT"<<std::endl;
+  // std::cout<<"Initializing BPT "<<file_name<<std::endl;
   Node<T, Compare> u(sizeof(int) * 2, fo, mr);
+  // std::cout<<"Node constructed"<<std::endl;
   u.ch_cnt = 1, u.ch_dat[0] = T::positiveInfinity();
+  // std::cout<<"dat0 constructed"<<std::endl;
   fo.write(0, &u.pos);
   fo.write(sizeof(int), &siz);
   u.write(fo, mr);
@@ -308,11 +314,24 @@ BPlusTree<T, Compare>::~BPlusTree() noexcept {
       fo.write(mr.mem[i].pos, &mr.mem[i]);
   }
 }
+template <typename T, typename Compare>
+void BPlusTree<T, Compare>::clear() noexcept {
+  fo.clear(),siz=0,mr.clear();
+  Node<T, Compare> u(sizeof(int) * 2, fo, mr);
+  u.ch_cnt = 1, u.ch_dat[0] = T::positiveInfinity();
+  fo.write(0, &u.pos);
+  fo.write(sizeof(int), &siz);
+  u.write(fo, mr);
+  rt_pos = u.pos;
+}
 
 template <typename T, typename Compare>
 void BPlusTree<T, Compare>::insert(const T &t) noexcept {
+  // std::cout<<"Inserting"<<std::endl;
   siz++;
+  // std::cout<<"inner insert start"<<std::endl;
   std::pair<int, int> pr = innerInsert(rt_pos, t);
+  // std::cout<<"inner insert done"<<std::endl;
   if (pr.first == 0)
     return;
 
@@ -337,13 +356,17 @@ bool BPlusTree<T, Compare>::remove(const T &t) noexcept {
 template <typename T, typename Compare>
 sjtu::vector<T> BPlusTree<T, Compare>::find(const T &l, const T &r) noexcept {
   std::pair<int, int> pr = lowerBound(l);
+  // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
   sjtu::vector<T> res;
   for (Node<T, Compare> u(pr.first, fo, mr); u.pos;
        u = Node<T, Compare>(u.nxt, fo, mr)) {
     for (int i = (u.pos == pr.first ? pr.second : 0); i < u.ch_cnt; i++) {
       if (!comp(u.ch_dat[i], r))
+      {
+        // std::cout<<"The first ge is Node #"<<u.pos<<"'s "<<i<<"th element"<<std::endl;
         return res;
+      }
       res.push_back(u.ch_dat[i]);
     }
   }

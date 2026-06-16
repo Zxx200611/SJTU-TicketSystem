@@ -17,7 +17,7 @@ template <typename T, typename Compare> class MemoryRiver;
 
 template <typename T, typename Compare> class Node {
 public:
-  static constexpr int max_ch_cnt = 60; // 60
+  static constexpr int max_ch_cnt = 10; // 60
   int pos, ch_cnt, fth, nxt;
   int ch_pos[max_ch_cnt + 1];
   T ch_dat[max_ch_cnt + 1];
@@ -39,10 +39,11 @@ public:
 
 template <typename T, typename Compare> class MemoryRiver {
 public:
-  static constexpr int M = 4001;
+  static constexpr int M = 83;
   Node<T, Compare> mem[M];
 
   inline MemoryRiver() noexcept;
+  inline void clear() noexcept;
   inline void readNode(int pos, FileOperator &fo,
                        Node<T, Compare> &dst) noexcept;
   inline void writeNode(Node<T, Compare> u, FileOperator &fo) noexcept;
@@ -65,11 +66,13 @@ private:
 public:
   explicit BPlusTree(const std::string &file_name) noexcept;
   ~BPlusTree() noexcept;
+  inline void clear() noexcept;
 
   inline void insert(const T &t) noexcept;
   inline bool remove(const T &t) noexcept;
   inline sjtu::vector<T> find(const T &l, const T &r) noexcept; // find [l,r)
   inline int size() noexcept;
+
 
   inline void debugPrint() noexcept;
 };

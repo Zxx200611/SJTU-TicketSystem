@@ -12,6 +12,7 @@ private:
 
 public:
   explicit FileOperator(const std::string &file_name) noexcept;
+  void clear() noexcept;
   template <typename T> inline void read(int pos, T *t) noexcept;
   template <typename T> inline void write(int pos, T *t) noexcept;
   inline void read(int pos, int *t) noexcept;

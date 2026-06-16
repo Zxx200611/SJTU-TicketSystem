@@ -13,6 +13,12 @@ FileOperator::FileOperator(const std::string &file_name) noexcept
     file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
   }
 }
+void FileOperator::clear() noexcept {
+  file.close();
+  file.open(file_name, std::ios::out | std::ios::binary | std::ios::trunc);
+  file.close();
+  file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
+}
 template <typename T> void FileOperator::read(int pos, T *t) noexcept {
   file.seekg(pos);
   file.read(reinterpret_cast<char *>(t), T::memory_size);
