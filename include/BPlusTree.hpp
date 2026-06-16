@@ -10,11 +10,11 @@
 #include<cstring>
 
 #pragma pack(1)
-template <typename T, typename Compare> class MemoryRiver;
+template <typename T, typename Compare, int N, int M> class MemoryRiver;
 
-template <typename T, typename Compare> class Node {
+template <typename T, typename Compare, int N, int M> class Node {
 public:
-  static constexpr int max_ch_cnt = 10; // 60
+  static constexpr int max_ch_cnt = N; // 60
   int pos, ch_cnt, fth, nxt;
   int ch_pos[max_ch_cnt + 1];
   T ch_dat[max_ch_cnt + 1];
@@ -24,9 +24,9 @@ public:
 
   explicit Node() noexcept;
   explicit Node(int this_pos, FileOperator &fo,
-                MemoryRiver<T, Compare> &mr) noexcept;
+                MemoryRiver<T, Compare,N,M> &mr) noexcept;
   inline Node &operator=(const Node &b);
-  inline void write(FileOperator &fo, MemoryRiver<T, Compare> &mr) noexcept;
+  inline void write(FileOperator &fo, MemoryRiver<T, Compare,N,M> &mr) noexcept;
   inline constexpr T maxElement() noexcept;
   inline constexpr bool isLeaf() noexcept;
   inline void insert(int p, const T &v, int pos) noexcept; // insert before p
@@ -34,24 +34,24 @@ public:
   inline int findPos(int p) noexcept;
 };
 
-template <typename T, typename Compare> class MemoryRiver {
+template <typename T, typename Compare, int N, int M> class MemoryRiver {
 public:
-  static constexpr int M = 83;
-  Node<T, Compare> mem[M];
+  static constexpr int mr_siz = M; // 60
+  Node<T, Compare, N,M> mem[mr_siz];
 
   inline MemoryRiver() noexcept;
   inline void clear() noexcept;
   inline void readNode(int pos, FileOperator &fo,
-                       Node<T, Compare> &dst) noexcept;
-  inline void writeNode(Node<T, Compare> u, FileOperator &fo) noexcept;
+                       Node<T,Compare,N,M> &dst) noexcept;
+  inline void writeNode(Node<T,Compare,N,M> u, FileOperator &fo) noexcept;
 };
 
-template <typename T, typename Compare> class BPlusTree {
+template <typename T, typename Compare,int N,int M> class BPlusTree {
 private:
   int rt_pos, siz;
   FileOperator fo;
   Compare comp;
-  MemoryRiver<T, Compare> mr;
+  MemoryRiver<T, Compare, N, M> mr;
 
   inline void updateAncestors(int uid, int vp) noexcept;
   inline std::pair<int, int> innerInsert(int uid, const T &t) noexcept;

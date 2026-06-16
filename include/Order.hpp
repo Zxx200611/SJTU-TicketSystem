@@ -44,8 +44,8 @@ public:
     inline bool operator () (const SemiOrder &a,const SemiOrder &b);
 };
 
-BPlusTree<Order,OrderCompareByUsernameAndTag> Orders("Orders.dat");
-BPlusTree<SemiOrder,SOCompareByTrainidAndDeparDate> Pend("Pend.dat");
+BPlusTree<Order,OrderCompareByUsernameAndTag,50,128> Orders("Orders.dat");
+BPlusTree<SemiOrder,SOCompareByTrainidAndDeparDate,50,128> Pend("Pend.dat");
 
 inline void queryOrder(const std::string &username);
 inline void buyTicket(const std::string &username,const std::string &train_id,const std::string &S

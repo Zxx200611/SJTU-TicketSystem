@@ -28,7 +28,7 @@ public:
     inline bool operator () (const User &a,const User &b);
 };
 
-BPlusTree<User,UserCompareByUsernameAndPriv> Users("Users.dat");
+BPlusTree<User,UserCompareByUsernameAndPriv,50,128> Users("Users.dat");
 sjtu::map<std::string,bool> login_list;
 
 inline bool addUser(const std::string &c,const std::string &u,const std::string &_passwd
