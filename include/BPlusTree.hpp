@@ -36,7 +36,7 @@ public:
 
 template <typename T, typename Compare> class MemoryRiver {
 public:
-  static constexpr int M = 83;
+  static constexpr int M = 37;
   Node<T, Compare> mem[M];
 
   inline MemoryRiver() noexcept;
