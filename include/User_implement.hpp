@@ -106,6 +106,7 @@ inline bool modifyProfile(const std::string &c,const std::string &u,const std::s
 
     User C=tmpc.front(),U=tmpu.front();
     if(c!=u&&C.privilege<=U.privilege) return 0;
+    if(_privilege!=-1&&C.privilege<=_privilege) return 0;
     Users.remove(U);
     if(!_passwd.empty()) strcpy(U.passwd,_passwd.c_str());
     if(!_chinese_name.empty()) strcpy(U.chinese_name,_chinese_name.c_str());

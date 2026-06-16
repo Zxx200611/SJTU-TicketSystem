@@ -14,7 +14,7 @@ template <typename T, typename Compare> class MemoryRiver;
 
 template <typename T, typename Compare> class Node {
 public:
-  static constexpr int max_ch_cnt = 20; // 60
+  static constexpr int max_ch_cnt = 10; // 60
   int pos, ch_cnt, fth, nxt;
   int ch_pos[max_ch_cnt + 1];
   T ch_dat[max_ch_cnt + 1];
@@ -36,7 +36,7 @@ public:
 
 template <typename T, typename Compare> class MemoryRiver {
 public:
-  static constexpr int M = 37;
+  static constexpr int M = 83;
   Node<T, Compare> mem[M];
 
   inline MemoryRiver() noexcept;
