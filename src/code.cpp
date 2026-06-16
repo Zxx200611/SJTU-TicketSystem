@@ -4,6 +4,9 @@
 
 int main()
 {
+    std::ios::sync_with_stdio(0);
+    std::cin.tie(0),std::cout.tie(0);
+
     // dbg<<"Dbg in"<<std::endl;
     // int p[100];
     // for(int i=0;i<5;i++) p[i]=5-i;
@@ -27,7 +30,7 @@ int main()
         // std::cout<<"Parse done"<<std::endl;
 
         std::cout<<"["<<M["T"]<<"] ";
-        std::cout.flush();// !
+        // std::cout.flush();// !
         if(hd=="add_user")
         {
             int r=addUser(M["c"],M["u"],M["p"],M["n"],M["m"],utils::stringToInt(M["g"]));

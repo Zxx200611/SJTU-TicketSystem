@@ -1,5 +1,6 @@
 #pragma once
 #include<Train.hpp>
+
 #pragma pack(1)
 // Train******************************************************************************
 Train::Train():train_id(""),station_num(0),departure(0),sale_start(0),sale_end(0)
@@ -483,7 +484,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
 
         if(A.empty()||B.empty()) continue;
 
-        static int pA[500010],pB[500010];
+        static int pA[50010],pB[50010];
         for(int i=0;i<A.size();i++) pA[i]=i;
         for(int i=0;i<B.size();i++) pB[i]=i;
         utils::sort(pA,pA+A.size(),[&](int a,int b)
@@ -498,7 +499,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         });
         // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Sorted"<<std::endl;
 
-        static int suf_mnp[500010][2];
+        static int suf_mnp[50010][2];
         suf_mnp[B.size()][0]=suf_mnp[B.size()][1]=B.size();
         for(int i=B.size()-1;i>=0;i--)
         {

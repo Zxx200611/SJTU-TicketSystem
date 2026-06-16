@@ -1,4 +1,5 @@
 #pragma once
+
 #include<Order.hpp>
 
 #pragma pack(1)
@@ -208,6 +209,7 @@ void refundTicket(const std::string &username,int n)
     Orders.insert(ro);
     if(ro_sta==0)
     {
+        Pend.remove(SemiOrder(ro.username,ro.train_id,ro.depar_date,ro.tag));
         std::cout<<"0\n";
         return;
     }

@@ -1,5 +1,4 @@
 #pragma once
-
 #pragma GCC optimize(2)
 
 #include <FileOperator.hpp>
@@ -10,14 +9,12 @@
 #include <utility>
 #include<cstring>
 
-
-
 #pragma pack(1)
 template <typename T, typename Compare> class MemoryRiver;
 
 template <typename T, typename Compare> class Node {
 public:
-  static constexpr int max_ch_cnt = 10; // 60
+  static constexpr int max_ch_cnt = 30; // 60
   int pos, ch_cnt, fth, nxt;
   int ch_pos[max_ch_cnt + 1];
   T ch_dat[max_ch_cnt + 1];

@@ -1,6 +1,5 @@
-#pragma GCC optimize(2)
-
 #include <BPlusTree.hpp>
+#pragma GCC optimize(2)
 #pragma pack(1)
 // Node ***********************************************************
 template <typename T, typename Compare> Node<T, Compare>::Node() noexcept {
