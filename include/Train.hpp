@@ -69,7 +69,7 @@ public:
     inline QueryTransferResult(const QueryTicketResult &a,const QueryTicketResult &b);
 };
 
-BPlusTree<Train,TrainCompareByIdAndStationNum,4,20> Trains("Trains.dat");
+BPlusTree<Train,TrainCompareByIdAndStationNum,40,1> Trains("Trains.dat");
 BPlusTree<StationTimeTrain,STTCompareByStationAndTime,60,512> Arriv("Arriv.dat"),Depar("Depar.dat");
 
 inline bool addTrain(const std::string &_train_id,int _station_num,int _seat_num
