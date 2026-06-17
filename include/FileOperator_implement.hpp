@@ -1,41 +1,19 @@
 #include <FileOperator.hpp>
+#include <unistd.h>
 
 FileOperator::FileOperator(const std::string &file_name) noexcept
     : file_name(file_name) {
-  file.close();
-  file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-  if (!file) {
-    // #ifdef DEBUG
-    //         std::cout<<"makefile "<<file_name<<std::endl;
-    // #endif
-    file.open(file_name, std::ios::out | std::ios::binary);
-    file.close();
-    file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
+  fd = open(file_name.c_str(), O_RDWR | O_CREAT, 0666);
+  if (fd == -1) {
+    fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
   }
 }
+
+FileOperator::~FileOperator() noexcept {
+  if (fd != -1) close(fd);
+}
+
 void FileOperator::clear() noexcept {
-  file.close();
-  file.open(file_name, std::ios::out | std::ios::binary | std::ios::trunc);
-  file.close();
-  file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-}
-template <typename T> void FileOperator::read(int pos, T *t) noexcept {
-  file.seekg(pos);
-  file.read(reinterpret_cast<char *>(t), T::memory_size);
-}
-template <typename T> void FileOperator::write(int pos, T *t) noexcept {
-  file.seekp(pos);
-  file.write(reinterpret_cast<char *>(t), T::memory_size);
-}
-void FileOperator::read(int pos, int *t) noexcept {
-  file.seekg(pos);
-  file.read(reinterpret_cast<char *>(t), sizeof(int));
-}
-void FileOperator::write(int pos, int *t) noexcept {
-  file.seekp(pos);
-  file.write(reinterpret_cast<char *>(t), sizeof(int));
-}
-int FileOperator::size() noexcept {
-  file.seekg(0, std::ios::end);
-  return file.tellg();
+  if (fd != -1) close(fd);
+  fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
 }

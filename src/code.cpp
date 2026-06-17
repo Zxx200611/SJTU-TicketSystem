@@ -1,9 +1,12 @@
+// #include <gperftools/profiler.h>
+
 #include<Train.hpp>
 #include<Order.hpp>
 #include<User.hpp>
 
 int main()
 {
+    // ProfilerStart("profile.out");
     std::ios::sync_with_stdio(0);
     std::cin.tie(0),std::cout.tie(0);
 
@@ -121,4 +124,5 @@ int main()
         // std::cout<<"Done"<<std::endl;
         // Users.debugPrint();
     }
+    // ProfilerStop();
 }

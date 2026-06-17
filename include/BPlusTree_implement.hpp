@@ -2,13 +2,19 @@
 #pragma GCC optimize(2)
 #pragma pack(1)
 // Node ***********************************************************
-template <typename T, typename Compare,int N,int M> Node<T, Compare,N,M>::Node() noexcept {
-  pos = 0, ch_cnt = 0;
-  memset(ch_pos, 0, sizeof(ch_pos));
-  for (int i = 0; i <= max_ch_cnt; i++)
-    ch_dat[i] = T::zero();
-  fth = nxt = 0;
+template <typename T, typename Compare,int N,int M>
+Node<T,Compare,N,M>::Node() noexcept {
+    pos = ch_cnt = fth = nxt = 0;
+    memset(ch_pos, 0, sizeof(ch_pos));
+    memset(ch_dat, 0, sizeof(ch_dat));
 }
+// template <typename T, typename Compare,int N,int M> Node<T, Compare,N,M>::Node() noexcept {
+//   pos = 0, ch_cnt = 0;
+//   memset(ch_pos, 0, sizeof(ch_pos));
+//   for (int i = 0; i <= max_ch_cnt; i++)
+//     ch_dat[i] = T::zero();
+//   fth = nxt = 0;
+// }
 template <typename T, typename Compare,int N,int M>
 Node<T, Compare,N,M>::Node(int this_pos, FileOperator &fo,
                        MemoryRiver<T, Compare,N,M> &mr) noexcept {
@@ -16,8 +22,7 @@ Node<T, Compare,N,M>::Node(int this_pos, FileOperator &fo,
     // std::cout<<"Initializing node"<<std::endl;
     pos = this_pos, ch_cnt = 0;
     memset(ch_pos, 0, sizeof(ch_pos));
-    for (int i = 0; i <= max_ch_cnt; i++)
-      ch_dat[i] = T::zero();
+    memset(ch_dat, 0, sizeof(ch_dat));
     fth = nxt = 0;
   } else
     mr.readNode(this_pos, fo, *this);
@@ -27,6 +32,7 @@ Node<T,Compare,N,M> &Node<T,Compare,N,M>::operator=(const Node<T,Compare,N,M> &b
   if (&b == this)
     return *this;
 
+  memcpy(this, &b, sizeof(Node));
   pos = b.pos, ch_cnt = b.ch_cnt, fth = b.fth, nxt = b.nxt;
   for (int i = 0; i < ch_cnt; i++)
     ch_pos[i] = b.ch_pos[i];
@@ -49,22 +55,42 @@ constexpr bool Node<T,Compare,N,M>::isLeaf() noexcept {
 }
 template <typename T, typename Compare,int N,int M>
 void Node<T,Compare,N,M>::insert(int p, const T &v, int pos) noexcept {
-  for (int i = ch_cnt; i > p; i--)
-    ch_dat[i] = ch_dat[i - 1];
-  for (int i = ch_cnt; i > p; i--)
-    ch_pos[i] = ch_pos[i - 1];
-  ch_dat[p] = v, ch_pos[p] = pos;
-  ch_cnt++;
+    if (p < ch_cnt) {
+        memmove(ch_dat + p + 1, ch_dat + p, (ch_cnt - p) * sizeof(T));
+        memmove(ch_pos + p + 1, ch_pos + p, (ch_cnt - p) * sizeof(int));
+    }
+    ch_dat[p] = v;
+    ch_pos[p] = pos;
+    ch_cnt++;
 }
 template <typename T, typename Compare,int N,int M>
 void Node<T,Compare,N,M>::remove(int p) noexcept {
-  for (int i = p; i + 1 < ch_cnt; i++)
-    ch_dat[i] = ch_dat[i + 1];
-  for (int i = p; i + 1 < ch_cnt; i++)
-    ch_pos[i] = ch_pos[i + 1];
-  ch_dat[ch_cnt - 1] = T::zero(), ch_pos[ch_cnt - 1] = 0;
-  ch_cnt--;
+    if (p + 1 < ch_cnt) {
+        memmove(ch_dat + p, ch_dat + p + 1, (ch_cnt - p - 1) * sizeof(T));
+        memmove(ch_pos + p, ch_pos + p + 1, (ch_cnt - p - 1) * sizeof(int));
+    }
+    ch_cnt--;
+    memset(ch_dat + ch_cnt, 0, sizeof(T));
+    memset(ch_pos + ch_cnt, 0, sizeof(int));
 }
+// template <typename T, typename Compare,int N,int M>
+// void Node<T,Compare,N,M>::insert(int p, const T &v, int pos) noexcept {
+//   for (int i = ch_cnt; i > p; i--)
+//     ch_dat[i] = ch_dat[i - 1];
+//   for (int i = ch_cnt; i > p; i--)
+//     ch_pos[i] = ch_pos[i - 1];
+//   ch_dat[p] = v, ch_pos[p] = pos;
+//   ch_cnt++;
+// }
+// template <typename T, typename Compare,int N,int M>
+// void Node<T,Compare,N,M>::remove(int p) noexcept {
+//   for (int i = p; i + 1 < ch_cnt; i++)
+//     ch_dat[i] = ch_dat[i + 1];
+//   for (int i = p; i + 1 < ch_cnt; i++)
+//     ch_pos[i] = ch_pos[i + 1];
+//   ch_dat[ch_cnt - 1] = T::zero(), ch_pos[ch_cnt - 1] = 0;
+//   ch_cnt--;
+// }
 template <typename T, typename Compare,int N,int M>
 int Node<T,Compare,N,M>::findPos(int p) noexcept {
   for (int i = 0; i < ch_cnt; i++)
@@ -326,11 +352,8 @@ void BPlusTree<T,Compare,N,M>::clear() noexcept {
 
 template <typename T, typename Compare,int N,int M>
 void BPlusTree<T,Compare,N,M>::insert(const T &t) noexcept {
-  // std::cout<<"Inserting"<<std::endl;
   siz++;
-  // std::cout<<"inner insert start"<<std::endl;
   std::pair<int, int> pr = innerInsert(rt_pos, t);
-  // std::cout<<"inner insert done"<<std::endl;
   if (pr.first == 0)
     return;
 
@@ -370,6 +393,16 @@ sjtu::vector<T> BPlusTree<T,Compare,N,M>::find(const T &l, const T &r) noexcept 
     }
   }
   return res;
+}
+template <typename T, typename Compare,int N,int M>
+bool BPlusTree<T,Compare,N,M>::findFirstGe(const T &t,T &res) noexcept {
+  std::pair<int, int> pr = lowerBound(t);
+  // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
+
+  Node<T,Compare,N,M> u(pr.first, fo, mr);
+  if(!comp(u.ch_dat[pr.second],T::positiveInfinity())) return 0;
+  res=u.ch_dat[pr.second];
+  return 1;
 }
 template <typename T, typename Compare,int N,int M>
 int BPlusTree<T,Compare,N,M>::size() noexcept {

@@ -1,6 +1,8 @@
 #pragma once
 #include<Train.hpp>
 
+#include<algorithm>
+
 #pragma pack(1)
 // Train******************************************************************************
 Train::Train():train_id(""),station_num(0),departure(0),sale_start(0),sale_end(0)
@@ -17,34 +19,24 @@ Train::Train(const std::string &_train_id,int _station_num,int _seat_num
             ,const std::string &_travel_times,const std::string &_stop_times
             ,const std::string _sale_date,char _type):is_released(0)
 {
-    // std::cout<<"Station num = "<<_station_num<<std::endl;
-    // std::cout<<"Stations : "<<_stations<<std::endl;
     strcpy(train_id,_train_id.c_str());
     station_num=_station_num,seat_num=_seat_num;
-    sjtu::vector<std::string> stations_tmp=utils::splitBy(_stations,'|');
-    sjtu::vector<std::string> prices_tmp=utils::splitBy(_prices,'|');
-    sjtu::vector<std::string> travel_tmp=utils::splitBy(_travel_times,'|');
-    sjtu::vector<std::string> stop_tmp=utils::splitBy(_stop_times,'|');
-    sjtu::vector<std::string> sale_tmp=utils::splitBy(_sale_date,'|');
-    // std::cout<<"Station count = "<<stations_tmp.size()<<std::endl;
-    // std::cout<<"Prices count = "<<prices_tmp.size()<<std::endl;
-    // std::cout<<"Travelt count = "<<travel_tmp.size()<<std::endl;
-    // std::cout<<"Stopt count = "<<stop_tmp.size()<<std::endl;
-    // std::cout<<"Salet count = "<<sale_tmp.size()<<std::endl;
-    if(!stations_tmp.empty())
+    if(seat_num!=0)
     {
+        sjtu::vector<std::string> stations_tmp=utils::splitBy(_stations,'|');
+        sjtu::vector<std::string> prices_tmp=utils::splitBy(_prices,'|');
+        sjtu::vector<std::string> travel_tmp=utils::splitBy(_travel_times,'|');
+        sjtu::vector<std::string> stop_tmp=utils::splitBy(_stop_times,'|');
+        sjtu::vector<std::string> sale_tmp=utils::splitBy(_sale_date,'|');
         for(int i=0;i<station_num;i++) strcpy(stations[i],stations_tmp[i].c_str());
         for(int i=0;i<station_num-1;i++) prices[i]=utils::stringToInt(prices_tmp[i]);
         for(int i=0;i<station_num-1;i++) travel_times[i]=utils::stringToInt(travel_tmp[i]);
         for(int i=1;i<station_num-1;i++) stop_times[i]=utils::stringToInt(stop_tmp[i-1]);
-    }
 
-    memset(seats,0,sizeof(seats));
-    if(!sale_tmp.empty())
-    {
         sale_start=utils::stringToDate(sale_tmp.front());
         sale_end=utils::stringToDate(sale_tmp.back());
         
+        memset(seats,0,sizeof(seats));
         for(int i=sale_start;i<=sale_end;i++)
         {
             for(int j=0;j<station_num;j++) seats[i][j]=_seat_num;
@@ -52,8 +44,6 @@ Train::Train(const std::string &_train_id,int _station_num,int _seat_num
     }
     else sale_start=sale_end=0;
     departure=_departure,type=_type;
-    // std::cout<<"Construct train done"<<std::endl;
-    // std::cout<<"Train id = "<<train_id<<std::endl;
 }
 Train Train::zero(){return Train();}
 Train Train::positiveInfinity(){return Train("~~~~~~~~~~~~~~~~~~~~",0,0,"","",0,"","","",0);}
@@ -238,14 +228,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
         StationTimeTrain(T,date+3,1440,"",0,0,0,0,0)
     );
-    // std::cout<<"tmpS "<<tmpS.size()<<" : ";
-    // for(const StationTimeTrain &stt:tmpS) std::cout<<stt<<" ";
-    // std::cout<<std::endl;
-    // std::cout<<"tmpT "<<tmpT.size()<<" : ";
-    // for(const StationTimeTrain &stt:tmpT) std::cout<<stt<<" ";
-    // std::cout<<std::endl;
     
-    // std::cout<<"pS,pT clacing"<<std::endl;
     static int pS[50010],pT[50010];
     for(int i=0;i<tmpS.size();i++) pS[i]=i;
     for(int i=0;i<tmpT.size();i++) pT[i]=i;
@@ -261,32 +244,24 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         if(x==0) return tmpT[a].start_date<tmpT[b].start_date;
         return x<0;
     });
-    // std::cout<<"pS "<<tmpS.size()<<" : ";
-    // for(int i=0;i<tmpS.size();i++) std::cout<<pS[i]<<" ";
-    // std::cout<<std::endl;
-    // std::cout<<"pT "<<tmpT.size()<<" : ";
-    // for(int i=0;i<tmpT.size();i++) std::cout<<pT[i]<<" ";
-    // std::cout<<std::endl;
 
-    // std::cout<<"J : ";
     sjtu::vector<QueryTicketResult> res;
     for(int i=0,j=0;i<tmpS.size();i++)
     {
-        while(j<tmpT.size()&&(strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id)<0
-                            ||(strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id)==0&&tmpT[pT[j]].start_date<tmpS[pS[i]].start_date))) j++;
-        if(j<tmpT.size()&&strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id)==0&&tmpT[pT[j]].start_date==tmpS[pS[i]].start_date)
+        int cmp_res=(j==tmpT.size()?0:strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id));
+        while(j<tmpT.size()&&(cmp_res<0||(cmp_res==0&&tmpT[pT[j]].start_date<tmpS[pS[i]].start_date)))
+        {
+            j++;
+            cmp_res=(j==tmpT.size()?0:strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id));
+        }
+        if(j<tmpT.size()&&cmp_res==0&&tmpT[pT[j]].start_date==tmpS[pS[i]].start_date)
         {
             if(tmpS[pS[i]].sta_id>=tmpT[pT[j]].sta_id) continue;
-            // std::cout<<tmpS[pS[i]]<<" and "<<tmpT[pT[j]]<<" are from the same train"<<std::endl;
-            sjtu::vector<Train> tmp=Trains.find
-            (
-                Train(tmpS[pS[i]].train_id,0,0,"","",0,"","","",0),
-                Train(tmpS[pS[i]].train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-            );
-            assert(tmp.size()==1);
-            const Train &u=tmp.front();
+            
+            Train u;
+            Trains.findFirstGe(Train(tmpS[pS[i]].train_id,0,0,"","",0,"","","",0),u);
+
             int mnst=1e8;
-            // std::cout<<"mnst : min for date"<<tmpS[i].start_date<<" , [ "<<tmpS[i].sta_id<<" , "<<tmpT[j].sta_id<<" )"<<std::endl;
             for(int k=tmpS[pS[i]].sta_id;k!=tmpT[pT[j]].sta_id;k++)
             {
                 mnst=std::min(mnst,u.seats[tmpS[pS[i]].start_date][k]);
@@ -298,10 +273,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
                 tmpT[pT[j]].time,tmpT[pT[j]].s_time-tmpS[pS[i]].s_time,tmpT[pT[j]].s_price-tmpS[pS[i]].s_price,mnst
             ));
         }
-        // std::cout<<j<<" ";
     }
-    // std::cout<<std::endl;
-    // std::cout<<"res get, size = "<<res.size()<<std::endl;
 
     static int p[50010];
     for(int i=0;i<res.size();i++) p[i]=i;
@@ -309,7 +281,6 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     if(cmp=="time") comp=[&](int a,int b)->bool {return res[a].time<res[b].time;};
     else            comp=[&](int a,int b)->bool {return res[a].price<res[b].price;};
     utils::sort(p,p+res.size(),comp);
-    // std::cout<<"p get"<<std::endl;
 
     std::cout<<res.size()<<'\n';
     for(int i=0;i<res.size();i++)
@@ -339,14 +310,9 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     for(const StationTimeTrain &x:tmp)
     {
         if(S_id.count(x.train_id)) continue;
-        sjtu::vector<Train> tmpt=Trains.find
-        (
-            Train(x.train_id,0,0,"","",0,"","","",0),
-            Train(x.train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-        );
 
-        assert(tmpt.size()==1);
-        const Train &u=tmpt.front();
+        Train u;
+        Trains.findFirstGe(Train(x.train_id,0,0,"","",0,"","","",0),u);
 
         int sn=0;
         while(strcmp(S.c_str(),u.stations[sn])) sn++;

@@ -80,30 +80,26 @@ inline bool logout(const std::string &_username)
 }
 inline bool queryProfile(const std::string &c,const std::string &u)
 {
-    // if(c=="I_am_the_admin"&&u=="Gravel") std::cerr<<"User "<<c<<" querying "<<u<<"'s profile"<<std::endl;
     if(login_list[c]==0) return 0;
-    // Users.debugPrint();
-    sjtu::vector<User> tmpc=Users.find(User(c,-1),User(c,11));
-    sjtu::vector<User> tmpu=Users.find(User(u,-1),User(u,11));
-    if(tmpc.size()!=1||tmpu.size()!=1) return 0;
-    // std::cout<<"count: c "<<tmpc.size()<<" u "<<tmpu.size()<<std::endl;
-
-    if(c!=u&&tmpc.front().privilege<=tmpu.front().privilege) return 0;
-    std::cout<<tmpu.front().username<<" ";
-    std::cout<<tmpu.front().chinese_name<<" ";
-    std::cout<<tmpu.front().mail<<" ";
-    std::cout<<tmpu.front().privilege<<"\n";
+    User C,U;
+    if(!Users.findFirstGe(User(c,-1),C)||C.username!=c) return 0;
+    if(!Users.findFirstGe(User(u,-1),U)||U.username!=u) return 0;
+    
+    if(c!=u&&C.privilege<=U.privilege) return 0;
+    std::cout<<U.username<<" ";
+    std::cout<<U.chinese_name<<" ";
+    std::cout<<U.mail<<" ";
+    std::cout<<U.privilege<<"\n";
     return 1;
 }
 inline bool modifyProfile(const std::string &c,const std::string &u,const std::string &_passwd
                          ,const std::string &_chinese_name,const std::string &_mail,int _privilege)
 {
     if(login_list[c]==0) return 0;
-    sjtu::vector<User> tmpc=Users.find(User(c,-1),User(c,11));
-    sjtu::vector<User> tmpu=Users.find(User(u,-1),User(u,11));
-    if(tmpc.size()!=1||tmpu.size()!=1) return 0;
+    User C,U;
+    if(!Users.findFirstGe(User(c,-1),C)||C.username!=c) return 0;
+    if(!Users.findFirstGe(User(u,-1),U)||U.username!=u) return 0;
 
-    User C=tmpc.front(),U=tmpu.front();
     if(c!=u&&C.privilege<=U.privilege) return 0;
     if(_privilege!=-1&&C.privilege<=_privilege) return 0;
     Users.remove(U);

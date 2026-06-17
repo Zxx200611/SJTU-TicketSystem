@@ -26,6 +26,34 @@ T *lowerBound(T *s, T *t,const T &v, Compare comp) {
   }
   return s + res;
 }
+// template<typename T, typename Compare>
+// void sort(T *s, T *t, const Compare &comp) {
+//     if (t - s <= 16) {
+//         for (T *i = s + 1; i < t; ++i) {
+//             T key = *i;
+//             T *j = i;
+//             while (j > s && comp(key, *(j-1))) {
+//                 *j = *(j-1);
+//                 --j;
+//             }
+//             *j = key;
+//         }
+//         return;
+//     }
+//     T *mid = s + (t - s) / 2;
+//     if (comp(*mid, *s)) std::swap(*s, *mid);
+//     if (comp(*(t-1), *s)) std::swap(*s, *(t-1));
+//     if (comp(*(t-1), *mid)) std::swap(*mid, *(t-1));
+//     T pivot = *mid;
+//     T *i = s, *j = t - 1;
+//     while (i < j) {
+//         while (comp(*i, pivot)) ++i;
+//         while (comp(pivot, *j)) --j;
+//         if (i < j) std::swap(*i, *j);
+//     }
+//     sort(s, i, comp);
+//     sort(i, t, comp);
+// }
 template<typename T,typename Compare>
 void sort(T *s,T *t,const Compare &comp)
 {

@@ -145,9 +145,6 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
     utils::forward(t_date,t_time,-t.stop_times[tp]);
-    // if(tag==53628) std::cerr<<"C"<<std::endl;
-    // if(tag==21589) std::cerr<<"Min seat count = "<<mnst<<std::endl;
-    // if(tag==21589) std::cerr<<"Buy seat count = "<<count<<std::endl;
 
     if(mnst<count)
     {
