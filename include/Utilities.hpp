@@ -14,6 +14,9 @@ namespace utils {
 const int day_count[4]={30,31,31,30};
 const int day_countS[4]={30,61,92,122};
 
+const int hash_primes[2]={1000000007,1000000009};
+const int hash_base=263;
+
 template <typename T, typename Compare>
 T *lowerBound(T *s, T *t,const T &v, Compare comp) {
   int l = 0, r = t - s - 1, m = l, res = r + 1;
@@ -26,38 +29,9 @@ T *lowerBound(T *s, T *t,const T &v, Compare comp) {
   }
   return s + res;
 }
-// template<typename T, typename Compare>
-// void sort(T *s, T *t, const Compare &comp) {
-//     if (t - s <= 16) {
-//         for (T *i = s + 1; i < t; ++i) {
-//             T key = *i;
-//             T *j = i;
-//             while (j > s && comp(key, *(j-1))) {
-//                 *j = *(j-1);
-//                 --j;
-//             }
-//             *j = key;
-//         }
-//         return;
-//     }
-//     T *mid = s + (t - s) / 2;
-//     if (comp(*mid, *s)) std::swap(*s, *mid);
-//     if (comp(*(t-1), *s)) std::swap(*s, *(t-1));
-//     if (comp(*(t-1), *mid)) std::swap(*mid, *(t-1));
-//     T pivot = *mid;
-//     T *i = s, *j = t - 1;
-//     while (i < j) {
-//         while (comp(*i, pivot)) ++i;
-//         while (comp(pivot, *j)) --j;
-//         if (i < j) std::swap(*i, *j);
-//     }
-//     sort(s, i, comp);
-//     sort(i, t, comp);
-// }
 template<typename T,typename Compare>
 void sort(T *s,T *t,const Compare &comp)
 {
-    // std::cout<<"Sorting len1 = "<<(t-s)<<std::endl;
     if(s+1==t||s==t) return;
 
     std::function<void(T*,T*)> reverse=[&](T *l,T *r)
@@ -67,9 +41,7 @@ void sort(T *s,T *t,const Compare &comp)
     };
 
     T *m=s+(t-s+1)/2;
-    // std::cout<<"Split to "<<(m-s)<<" + "<<(t-m)<<std::endl;
     sort(s,m,comp),sort(m,t,comp);
-    // std::cout<<"Processing "<<(m-s)<<" + "<<(t-m)<<std::endl;
     while(m!=t&&s!=m)
     {
         T *tm=m;
@@ -79,7 +51,16 @@ void sort(T *s,T *t,const Compare &comp)
         reverse(s,m);
         s+=m-tm;
     }
-    // std::cout<<"done"<<std::endl;
+}
+inline
+int stringHash(const std::string &s,int pid)
+{
+    int res=0;
+    for(int i=0,w=1;i<s.size();i++,w=1ll*w*hash_base%hash_primes[pid])
+    {
+        res=(res+1ll*w*(s[i]+1)%hash_primes[pid])%hash_primes[pid];
+    }
+    return res;
 }
 
 inline
