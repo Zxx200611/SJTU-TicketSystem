@@ -19,16 +19,14 @@ public:
     inline explicit User(const std::string &_username,int _privilege,const std::string &_passwd=""
                  ,const std::string &_chinese_name="",const std::string &_mail="");
     inline User& operator = (const User &other);
-    inline static User zero();
-    inline static User positiveInfinity();
 };
-class UserCompareByUsernameAndPriv
+class UserHashByUsernameAndPriv
 {
 public:
-    inline bool operator () (const User &a,const User &b);
+    inline HashResult operator () (const User &a);
 };
 
-BPlusTree<User,UserCompareByUsernameAndPriv,50,128> Users("Users.dat");
+BPlusTree<User,UserHashByUsernameAndPriv,80,1000> Users("Users");
 sjtu::map<std::string,bool> login_list;
 
 inline bool addUser(const std::string &c,const std::string &u,const std::string &_passwd

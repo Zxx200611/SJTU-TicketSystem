@@ -13,6 +13,25 @@
 template <typename T, typename Hash, int N, int M> class MemoryRiver;
 class HashResult;
 
+
+class HashResult
+{
+public:
+  static constexpr int hash_siz=6;
+  static constexpr int memory_size=(hash_siz*2+1)*4;
+  long long t[hash_siz];
+  int pos;
+
+  inline HashResult() noexcept;
+  static bool comp(const HashResult &a,const HashResult &b) noexcept;
+  inline static HashResult zero() noexcept;
+  inline static HashResult positiveInfinity() noexcept;
+};
+inline std::ostream &operator<<(std::ostream &os, const HashResult &e) {
+  os << "< " << e.t[0] << " , " << e.t[1] << " , " << e.t[2] << " , " << e.t[3] << " , pos = "<<e.pos<<" >";
+  return os;
+}
+
 template <typename T, typename Hash, int N, int M> class Node {
 public:
   static constexpr int max_ch_cnt = N; // 60
@@ -21,7 +40,7 @@ public:
   HashResult ch_dat[max_ch_cnt + 1];
 
   static constexpr int memory_size =
-      4 + 4 + 4 + 4 + (max_ch_cnt + 1) * 4 + (max_ch_cnt + 1) * T::memory_size;
+      4 + 4 + 4 + 4 + (max_ch_cnt + 1) * 4 + (max_ch_cnt + 1) * HashResult::memory_size;
 
   explicit Node() noexcept;
   explicit Node(int this_pos, FileOperator &fo,
@@ -47,24 +66,6 @@ public:
   inline void writeNode(Node<T,Hash,N,M> u, FileOperator &fo) noexcept;
 };
 
-class HashResult
-{
-public:
-  static constexpr int hash_siz=6;
-  static constexpr int memory_size=(hash_siz*2+1)*4;
-  long long t[hash_siz];
-  int pos;
-
-  inline HashResult() noexcept;
-  static bool comp(const HashResult &a,const HashResult &b) noexcept;
-  inline static HashResult zero() noexcept;
-  inline static HashResult positiveInfinity() noexcept;
-};
-inline std::ostream &operator<<(std::ostream &os, const HashResult &e) {
-  os << "< " << e.t[0] << " , " << e.t[1] << " , " << e.t[2] << " , " << e.t[3] << " , pos = "<<e.pos<<" >";
-  return os;
-}
-
 template <typename T, typename Hash,int N,int M> class BPlusTree {
 private:
   int rt_pos, siz;
@@ -77,7 +78,7 @@ private:
   inline void innerRemove(int uid, int vid, const HashResult &t, bool ulev) noexcept;
   inline std::pair<int, int> lowerBound(const HashResult &t) noexcept;
 
-  inline void innerDebugPrint(int uid) noexcept;
+  inline void innerDebugPrint(int uid,std::ostream &os) noexcept;
 
 public:
   explicit BPlusTree(const std::string &name) noexcept;
@@ -91,7 +92,7 @@ public:
   inline int size() noexcept;
 
 
-  inline void debugPrint() noexcept;
+  inline void debugPrint(std::ostream &os) noexcept;
 };
 
 #include <BPlusTree_implement.hpp>

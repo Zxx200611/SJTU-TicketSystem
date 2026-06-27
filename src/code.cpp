@@ -1,110 +1,128 @@
-#include <BPlusTree.hpp>
-#include <iostream>
-#include <string>
+// #include <gperftools/profiler.h>
 
-#pragma pack(1)
-struct Element {
-  static constexpr int memory_size = 64 * sizeof(char) + sizeof(long long);
+#include<Train.hpp>
+#include<Order.hpp>
+#include<User.hpp>
 
-  char key[64];
-  long long val;
+int main()
+{
+    // ProfilerStart("profile.out");
+    std::ios::sync_with_stdio(0);
+    std::cin.tie(0),std::cout.tie(0);
 
-  Element() : key(""), val(0) {}
-  Element(const std::string &s, long long x) noexcept : val(x) {
-    for (int i = 0; i < s.size(); i++)
-      key[i] = s[i];
-    key[s.size()] = '\0';
-  }
-  Element &operator=(const Element &b) {
-    strcpy(key, b.key);
-    val = b.val;
-    return *this;
-  }
-};
-struct ElementHash {
-  HashResult operator () (const Element &e) const
-  {
-    HashResult res;
-    res.t[0]=utils::stringHash(e.key,0);
-    res.t[1]=utils::stringHash(e.key,1);
-    res.t[2]=e.val;
-    return res;
-  }
-};
-BPlusTree<Element, ElementHash, 80, 2000> bpt("test");
+    // dbg<<"Dbg in"<<std::endl;
+    // int p[100];
+    // for(int i=0;i<5;i++) p[i]=5-i;
+    // utils::sort(p,p+5,[&](int a,int b){return a<b;});
+    // for(int i=0;i<5;i++) std::cout<<p[i]<<" ";
+    // std::cout<<std::endl;
 
-inline std::ostream &operator<<(std::ostream &os, const Element &e) {
-  os << "< " << e.key << " , " << e.val << " >";
-  return os;
+    // std::cout<<utils::stringToDate("07-12")<<std::endl;
+    // int r=addTrain("LeavesofGrass",13,28660,"北京市|重庆市南川市|吉林省图们市|浙江省瑞安市|福建省莆田市|山东省栖霞市|福建省漳州市|河北省晋州市|广东省罗定市|四川省德阳市|天津市|广东省江门市|河北省石家庄市","236|3790|4547|3102|4803|738|2007|256|1567|1607|359|3041",827,"134|33|193|91|159|92|197|45|166|27|79|55","5|3|9|8|10|9|5|8|10|4|10","07-12|08-16",'Z');
+
+    // std::cout<<"Init complete"<<std::endl;
+    for(int _=1;;_++)
+    {
+        // std::cout<<"Processing command #"<<_<<std::endl;
+        std::string s;
+        std::getline(std::cin,s);
+
+        static sjtu::map<std::string,std::string> M;
+        M.clear();
+        std::string hd=utils::parse(s,M);
+        // std::cout<<"Parse done"<<std::endl;
+
+        std::cout<<"["<<M["T"]<<"] ";
+        // std::cout.flush();// !
+        if(hd=="add_user")
+        {
+            int r=addUser(M["c"],M["u"],M["p"],M["n"],M["m"],utils::stringToInt(M["g"]));
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="login")
+        {
+            int r=login(M["u"],M["p"]);
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="logout")
+        {
+            int r=logout(M["u"]);
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="query_profile")
+        {
+            int r=queryProfile(M["c"],M["u"]);
+            if(r==0) std::cout<<"-1\n";
+        }
+        if(hd=="modify_profile")
+        {
+            int r=modifyProfile(M["c"],M["u"],M["p"],M["n"],M["m"]
+                               ,M.count("g")?utils::stringToInt(M["g"]):-1);
+            if(r==0) std::cout<<"-1\n";
+        }
+        if(hd=="add_train")
+        {
+            // std::cout<<"stations : "<<M["s"]<<std::endl;
+            int n=utils::stringToInt(M["n"]);
+            // std::cout<<(n)<<std::endl;
+            // std::cout<<utils::stringToTime(M["x"])<<std::endl;
+            int r=addTrain(M["i"],n,utils::stringToInt(M["m"]),M["s"],M["p"]
+                          ,utils::stringToTime(M["x"]),M["t"],M["o"],M["d"],M["y"][0]);
+                          
+            // std::cout<<utils::stringToInt(M["n"])<<std::endl;
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="delete_train")
+        {
+            int r=deleteTrain(M["i"]);
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="release_train")
+        {
+            int r=releaseTrain(M["i"]);
+            std::cout<<r-1<<'\n';
+        }
+        if(hd=="query_train")
+        {
+            int r=queryTrain(M["i"],utils::stringToDate(M["d"]));
+            if(r==0) std::cout<<"-1\n";
+        }
+        if(hd=="query_ticket")
+        {
+            queryTicket(M["s"],M["t"],utils::stringToDate(M["d"]),M["p"]);
+        }
+        if(hd=="query_transfer")
+        {
+            queryTransfer(M["s"],M["t"],utils::stringToDate(M["d"]),M["p"]);
+        }
+        if(hd=="buy_ticket")
+        {
+            buyTicket(M["u"],M["i"],M["f"],M["t"],utils::stringToDate(M["d"])
+                     ,utils::stringToInt(M["n"]),M["q"]=="true",utils::stringToInt(M["T"]));
+        }
+        if(hd=="query_order")
+        {
+            queryOrder(M["u"]);
+        }
+        if(hd=="refund_ticket")
+        {
+            refundTicket(M["u"],M.count("n")?utils::stringToInt(M["n"]):1);
+        }
+        if(hd=="clean")
+        {
+            login_list.clear();
+            Users.clear();
+            Trains.clear(),Arriv.clear(),Depar.clear();
+            Orders.clear(),Pend.clear();
+            std::cout<<"0\n";
+        }
+        if(hd=="exit")
+        {
+            std::cout<<"bye"<<std::endl;
+            return 0;
+        }
+        // std::cout<<"Done"<<std::endl;
+        // Users.debugPrint();
+    }
+    // ProfilerStop();
 }
-
-int main() {
-  std::ios::sync_with_stdio(0);
-  std::cin.tie(0), std::cout.tie(0);
-
-  // std::cout<<"Initialized"<<std::endl;
-  int q;
-  std::cin >> q;
-  // bpt.debugPrint();
-  while (q--) {
-    std::string op, k;
-    int v;
-
-    std::cin >> op;
-    if (op == "insert") {
-      std::cin >> k >> v;
-      bpt.insert(Element(k, v));
-    }
-    if (op == "delete") {
-      std::cin >> k >> v;
-      bpt.remove(Element(k, v));
-    }
-    if (op == "find") {
-      std::cin >> k;
-      Element L(k, INT_MIN), R(k, (long long)INT_MAX+1);
-      sjtu::vector<Element> res = bpt.find(L, R);
-      for (Element &e : res)
-        std::cout << e.val << " ";
-      if (res.empty())
-        std::cout << "null";
-      std::cout << '\n';
-    }
-    // std::cout<<"Done"<<std::endl;
-    // bpt.debugPrint();
-  }
-  std::cout.flush();
-}
-/*
-23
-insert bc 2
-insert bc 3
-insert ca 1
-insert bc 1
-find cc
-find ab
-find cb
-insert ac 3
-insert aa 1
-insert bb 2
-insert bb 1
-insert ba 1
-find ac
-insert ab 3
-insert bb 3
-insert cb 1
-delete aa 1
-delete ca 1
-find bb
-delete bc 3
-insert aa 3
-delete cc 2
-find bc
-
-null
-null
-null
-3
-1 2 3
-1 2
-
-*/

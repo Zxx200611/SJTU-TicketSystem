@@ -313,7 +313,7 @@ BPlusTree<T,Hash,N,M>::BPlusTree(const std::string &name) noexcept: hash(), fo(n
     return;
   }
 
-  // std::cout<<"Initializing BPT "<<name<<std::endl;
+  // std::cerr<<"Initializing BPT "<<name<<std::endl;
   Node<T,Hash,N,M> u(sizeof(int) * 2, fo, mr);
   // std::cout<<"Node constructed"<<std::endl;
   u.ch_cnt = 1, u.ch_dat[0] = HashResult::positiveInfinity();
@@ -324,7 +324,8 @@ BPlusTree<T,Hash,N,M>::BPlusTree(const std::string &name) noexcept: hash(), fo(n
   rt_pos = u.pos;
 
   // u=Node<T,Hash>(sizeof(int)*2,fo,mr);
-  // std::cout<<"root's ch_cnt = "<<u.ch_cnt<<std::endl;
+  // debugPrint(std::cerr);
+  // std::cerr<<"root's ch_cnt = "<<u.ch_cnt<<std::endl;
 }
 template <typename T, typename Hash,int N,int M>
 BPlusTree<T,Hash,N,M>::~BPlusTree() noexcept {
@@ -400,7 +401,7 @@ sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const T &l, const T &r) noexcept {
 }
 template <typename T, typename Hash,int N,int M>
 bool BPlusTree<T,Hash,N,M>::findFirstGe(const T &t,T &res) noexcept {
-  std::pair<int, int> pr = lowerBound(t);
+  std::pair<int, int> pr = lowerBound(hash(t));
   // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
   Node<T,Hash,N,M> u(pr.first, fo, mr);
@@ -414,31 +415,31 @@ int BPlusTree<T,Hash,N,M>::size() noexcept {
 }
 
 template <typename T, typename Hash,int N,int M>
-void BPlusTree<T,Hash,N,M>::innerDebugPrint(int uid) noexcept {
+void BPlusTree<T,Hash,N,M>::innerDebugPrint(int uid,std::ostream &os) noexcept {
   Node<T,Hash,N,M> u(uid, fo, mr);
-  std::cout << "Node #" << uid << " : pos = " << u.pos
+  os << "Node #" << uid << " : pos = " << u.pos
             << " , ch_cnt = " << u.ch_cnt << " , fth = " << u.fth
             << " , nxt = " << u.nxt << std::endl;
-  std::cout << "     Child pos : ";
+  os << "     Child pos : ";
   for (int i = 0; i < u.ch_cnt; i++)
-    std::cout << u.ch_pos[i] << " ";
-  std::cout << std::endl;
-  std::cout << "     Child mxv : ";
+    os << u.ch_pos[i] << " ";
+  os << std::endl;
+  os << "     Child mxv : ";
   for (int i = 0; i < u.ch_cnt; i++)
-    std::cout << u.ch_dat[i] << " ";
-  std::cout << std::endl;
+    os << u.ch_dat[i] << " ";
+  os << std::endl;
 
   if (u.ch_pos[0] == 0)
     return;
   for (int i = 0; i < u.ch_cnt; i++)
-    innerDebugPrint(u.ch_pos[i]);
+    innerDebugPrint(u.ch_pos[i],os);
 }
 template <typename T, typename Hash,int N,int M>
-void BPlusTree<T,Hash,N,M>::debugPrint() noexcept {
-  std::cout << "BPT ***************************" << std::endl;
+void BPlusTree<T,Hash,N,M>::debugPrint(std::ostream &os) noexcept {
+  os << "BPT ***************************" << std::endl;
 
-  innerDebugPrint(rt_pos);
+  innerDebugPrint(rt_pos,os);
 
-  std::cout << "*******************************" << std::endl;
+  os << "*******************************" << std::endl;
 }
 // BPT  ***********************************************************
