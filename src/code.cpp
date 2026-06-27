@@ -61,7 +61,7 @@ int main() {
     }
     if (op == "find") {
       std::cin >> k;
-      Element L(k, INT_MIN), R(k, (long long)INT_MAX);
+      Element L(k, INT_MIN), R(k, (long long)INT_MAX+1);
       sjtu::vector<Element> res = bpt.find(L, R);
       for (Element &e : res)
         std::cout << e.val << " ";

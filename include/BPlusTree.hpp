@@ -51,8 +51,8 @@ class HashResult
 {
 public:
   static constexpr int hash_siz=6;
-  static constexpr int memory_size=(hash_siz+1)*4;
-  int t[hash_siz];
+  static constexpr int memory_size=(hash_siz*2+1)*4;
+  long long t[hash_siz];
   int pos;
 
   inline HashResult() noexcept;
