@@ -105,6 +105,10 @@ void MemoryRiver<T,Hash,N,M>::writeNode(Node<T,Hash,N,M> u,
   fo.write(u.pos, &u);
   mem[u.pos % mr_siz] = u;
 }
+template <typename T, typename Hash,int N,int M>
+void MemoryRiver<T,Hash,N,M>::invalidate(int pos) noexcept {
+  mem[pos%mr_siz].pos=0;
+}
 // MR *************************************************************
 
 // HashResult *****************************************************
@@ -166,7 +170,8 @@ std::pair<int, int> BPlusTree<T,Hash,N,M>::innerInsert(int uid,
   }
 
   if (u.ch_cnt == Node<T,Hash,N,M>::max_ch_cnt + 1) {
-    Node<T,Hash,N,M> &L = u, R(fo.allocate(), fo, mr);
+    Node<T,Hash,N,M> &L = u, R;
+    R.pos=fo.allocate();
     if (L.isLeaf())
       R.nxt = L.nxt, L.nxt = R.pos;
     R.fth = L.fth;
@@ -222,6 +227,7 @@ void BPlusTree<T,Hash,N,M>::innerRemove(int uid, int vid, const HashResult &t,bo
       Node<T,Hash,N,M> tmp(u.ch_pos[0], fo, mr);
       tmp.fth = 0;
       tmp.write(fo, mr);
+      mr.invalidate(rt_pos);
       fo.deallocate(rt_pos);
       rt_pos = u.ch_pos[0];
     }
@@ -258,6 +264,7 @@ void BPlusTree<T,Hash,N,M>::innerRemove(int uid, int vid, const HashResult &t,bo
       f.remove(f.findPos(v.pos));
       f.write(fo, mr);
     }
+    mr.invalidate(v.pos);
     fo.deallocate(v.pos);
     // std::cout<<"Merged. Below is an testing debug."<<std::endl;
     // debugPrint();

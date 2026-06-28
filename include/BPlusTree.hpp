@@ -64,6 +64,7 @@ public:
   inline void readNode(int pos, FileOperator &fo,
                        Node<T,Hash,N,M> &dst) noexcept;
   inline void writeNode(Node<T,Hash,N,M> u, FileOperator &fo) noexcept;
+  inline void invalidate(int pos) noexcept;
 };
 
 template <typename T, typename Hash,int N,int M> class BPlusTree {

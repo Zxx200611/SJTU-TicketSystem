@@ -83,7 +83,7 @@ void queryOrder(const std::string &username)
 void buyTicket(const std::string &username,const std::string &train_id,const std::string &S
               ,const std::string &T,int date,int count,bool allow_queue,int tag)
 {
-    // if(tag==53628) std::cerr<<"[ "<<tag<<" ] Buying ticket"<<std::endl;
+    // if(tag==442193) std::cerr<<"[ "<<tag<<" ] Buying ticket"<<std::endl;
     if(login_list[username]==0)
     {
         std::cout<<"-1\n";
@@ -101,7 +101,7 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
     Train t=tmp.front();
-    // if(tag==53628) std::cerr<<"A"<<std::endl;
+    // if(tag==442193) std::cerr<<"A"<<std::endl;
 
     if(t.is_released==0||t.seat_num<count)
     {
@@ -122,7 +122,7 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
     }
     int depar_date=t.sale_start+date-s_date;
     s_date=date;
-    // if(tag==53628) std::cerr<<"B"<<std::endl;
+    // if(tag==442193) std::cerr<<"B"<<std::endl;
 
     if(depar_date<t.sale_start||depar_date>t.sale_end)
     {
@@ -144,11 +144,15 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
     utils::forward(t_date,t_time,-t.stop_times[tp]);
+    // if(tag==442193) std::cerr<<"C"<<std::endl;
+    // if(tag==442193&&allow_queue) std::cerr<<"allow queue"<<std::endl;
+    
 
     if(mnst<count)
     {
         if(allow_queue)
         {
+            // if(tag==442193) std::cerr<<"inq"<<std::endl;
             std::cout<<"queue\n";
             Orders.insert(Order(username,train_id,S,T,tag,depar_date,s_date,s_time,t_date,t_time
                                ,s_pri,count,0));
@@ -158,7 +162,7 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
 
-    // if(tag==53628) std::cerr<<"D"<<std::endl;
+    // if(tag==442193) std::cerr<<"D"<<std::endl;
     Trains.remove(t);
     for(int i=sp;i!=tp;i++) t.seats[depar_date][i]-=count;
     Trains.insert(t);
