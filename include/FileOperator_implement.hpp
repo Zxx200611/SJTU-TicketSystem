@@ -12,22 +12,25 @@ FileOperator::FileOperator(const std::string &file_name) noexcept : file_name(fi
         int init = -1;
         pwrite(fd, &init, sizeof(int), 0);
         free_head = -1;
+        cached_size = header_size;
     } else {
         pread(fd, &free_head, sizeof(int), 0);
+        cached_size = st.st_size;
     }
 }
 
 FileOperator::~FileOperator() noexcept {
-  if (fd != -1)
-  {
-    write(-header_size,&free_head);
-    close(fd);
-  }
+    if (fd != -1) {
+        write(-header_size, &free_head);
+        close(fd);
+    }
 }
 
 void FileOperator::clear() noexcept {
-  if (fd != -1) close(fd);
-  fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
-  free_head=-1;
-  write(-header_size,&free_head);
+    if (fd != -1) close(fd);
+    fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+    free_head = -1;
+    cached_size = header_size;
+    int init = -1;
+    pwrite(fd, &init, sizeof(int), 0);
 }

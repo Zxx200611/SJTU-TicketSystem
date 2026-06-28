@@ -386,8 +386,7 @@ bool BPlusTree<T,Hash,N,M>::remove(const T &t) noexcept {
   return 1;
 }
 template <typename T, typename Hash,int N,int M>
-sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const T &l, const T &r) noexcept {
-  HashResult lh=hash(l),rh=hash(r);
+sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const HashResult &lh, const HashResult &rh) noexcept {
   std::pair<int, int> pr = lowerBound(lh);
   // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
@@ -407,6 +406,11 @@ sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const T &l, const T &r) noexcept {
     }
   }
   return res;
+}
+template <typename T, typename Hash,int N,int M>
+sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const T &l, const T &r) noexcept {
+  HashResult lh=hash(l),rh=hash(r);
+  return find(lh,rh);
 }
 template <typename T, typename Hash,int N,int M>
 bool BPlusTree<T,Hash,N,M>::findFirstGe(const T &t,T &res) noexcept {
