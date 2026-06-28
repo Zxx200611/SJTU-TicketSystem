@@ -5,8 +5,7 @@
 template <typename T, typename Hash,int N,int M> Node<T, Hash,N,M>::Node() noexcept {
   pos = 0, ch_cnt = 0;
   memset(ch_pos, 0, sizeof(ch_pos));
-  for (int i = 0; i <= max_ch_cnt; i++)
-    ch_dat[i] = HashResult::zero();
+  memset(ch_dat, 0, sizeof(ch_dat));
   fth = nxt = 0;
 }
 template <typename T, typename Hash,int N,int M>
@@ -103,8 +102,7 @@ void MemoryRiver<T,Hash,N,M>::writeNode(Node<T,Hash,N,M> u,
   if (mem[u.pos % mr_siz].pos != u.pos && mem[u.pos % mr_siz].pos != 0) {
     fo.write(mem[u.pos % mr_siz].pos, &mem[u.pos % mr_siz]);
   }
-  if (u.pos >= fo.size())
-    fo.write(u.pos, &u);
+  fo.write(u.pos, &u);
   mem[u.pos % mr_siz] = u;
 }
 // MR *************************************************************
@@ -168,7 +166,7 @@ std::pair<int, int> BPlusTree<T,Hash,N,M>::innerInsert(int uid,
   }
 
   if (u.ch_cnt == Node<T,Hash,N,M>::max_ch_cnt + 1) {
-    Node<T,Hash,N,M> &L = u, R(fo.size(), fo, mr);
+    Node<T,Hash,N,M> &L = u, R(fo.allocate(), fo, mr);
     if (L.isLeaf())
       R.nxt = L.nxt, L.nxt = R.pos;
     R.fth = L.fth;
@@ -224,6 +222,7 @@ void BPlusTree<T,Hash,N,M>::innerRemove(int uid, int vid, const HashResult &t,bo
       Node<T,Hash,N,M> tmp(u.ch_pos[0], fo, mr);
       tmp.fth = 0;
       tmp.write(fo, mr);
+      fo.deallocate(rt_pos);
       rt_pos = u.ch_pos[0];
     }
     return;
@@ -259,6 +258,7 @@ void BPlusTree<T,Hash,N,M>::innerRemove(int uid, int vid, const HashResult &t,bo
       f.remove(f.findPos(v.pos));
       f.write(fo, mr);
     }
+    fo.deallocate(v.pos);
     // std::cout<<"Merged. Below is an testing debug."<<std::endl;
     // debugPrint();
   } else {
@@ -351,14 +351,15 @@ void BPlusTree<T,Hash,N,M>::clear() noexcept {
 template <typename T, typename Hash,int N,int M>
 void BPlusTree<T,Hash,N,M>::insert(const T &t) noexcept {
   siz++;
-  HashResult h=hash(t);h.pos=dfo.size();
+  HashResult h=hash(t);h.pos=dfo.allocate();
   dfo.write(h.pos,&t);
   std::pair<int, int> pr = innerInsert(rt_pos, h);
   if (pr.first == 0)
     return;
 
-  Node<T,Hash,N,M> u(pr.first, fo, mr), v(pr.second, fo, mr),
-      w(fo.size(), fo, mr);
+  Node<T,Hash,N,M> u(pr.first, fo, mr), v(pr.second, fo, mr),w;
+  w.pos=fo.allocate();
+
   rt_pos = u.fth = v.fth = w.pos;
   w.ch_cnt = 2;
   w.ch_pos[0] = u.pos, w.ch_dat[0] = u.maxElement();
@@ -371,6 +372,7 @@ bool BPlusTree<T,Hash,N,M>::remove(const T &t) noexcept {
   std::pair<int, int> pr = lowerBound(h);
   if (HashResult::comp(h, Node<T,Hash,N,M>(pr.first, fo, mr).ch_dat[pr.second]))
     return 0;
+  dfo.deallocate(Node<T,Hash,N,M>(pr.first, fo, mr).ch_dat[pr.second].pos);
 
   innerRemove(rt_pos, 0, h, 0);
   siz--;
