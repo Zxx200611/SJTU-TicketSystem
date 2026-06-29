@@ -83,25 +83,19 @@ void queryOrder(const std::string &username)
 void buyTicket(const std::string &username,const std::string &train_id,const std::string &S
               ,const std::string &T,int date,int count,bool allow_queue,int tag)
 {
-    // if(tag==442193) std::cerr<<"[ "<<tag<<" ] Buying ticket"<<std::endl;
     if(login_list[username]==0)
     {
         std::cout<<"-1\n";
         return;
     }
 
-    sjtu::vector<Train> tmp=Trains.find
-    (
-        Train(train_id,0,0,"","",0,"","","",0),
-        Train(train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-    );
-    if(tmp.size()!=1)
+    Train t;
+    int p=Trains.findFirstGe(Train(train_id,0,0,"","",0,"","","",0),t);
+    if(p==-1||t.train_id!=train_id)
     {
         std::cout<<"-1\n";
         return;
     }
-    Train t=tmp.front();
-    // if(tag==442193) std::cerr<<"A"<<std::endl;
 
     if(t.is_released==0||t.seat_num<count)
     {
@@ -122,7 +116,6 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
     }
     int depar_date=t.sale_start+date-s_date;
     s_date=date;
-    // if(tag==442193) std::cerr<<"B"<<std::endl;
 
     if(depar_date<t.sale_start||depar_date>t.sale_end)
     {
@@ -144,15 +137,12 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
     utils::forward(t_date,t_time,-t.stop_times[tp]);
-    // if(tag==442193) std::cerr<<"C"<<std::endl;
-    // if(tag==442193&&allow_queue) std::cerr<<"allow queue"<<std::endl;
     
 
     if(mnst<count)
     {
         if(allow_queue)
         {
-            // if(tag==442193) std::cerr<<"inq"<<std::endl;
             std::cout<<"queue\n";
             Orders.insert(Order(username,train_id,S,T,tag,depar_date,s_date,s_time,t_date,t_time
                                ,s_pri,count,0));
@@ -162,23 +152,17 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
         return;
     }
 
-    // if(tag==442193) std::cerr<<"D"<<std::endl;
-    Trains.remove(t);
     for(int i=sp;i!=tp;i++) t.seats[depar_date][i]-=count;
-    Trains.insert(t);
-    // std::cout<<"E"<<std::endl;
+    Trains.dfo.write2(p+25+Train::max_station_cnt*35+4*(1+1+depar_date*Train::max_station_cnt),t.seats[depar_date],Train::max_station_cnt);
+
     Orders.insert(Order(username,train_id,S,T,tag,depar_date,s_date,s_time,t_date,t_time
                        ,s_pri,count,1));
     std::cout<<1ll*count*s_pri<<'\n';
-    
-    // std::cout<<"F"<<std::endl;
 }
 void refundTicket(const std::string &username,int n)
 {
-    // if(username=="Schwarz"&&n==20) std::cerr<<"Find refound"<<std::endl;
     if(login_list[username]==0)
     {
-        // if(username=="Schwarz"&&n==20) std::cerr<<"Not logged in"<<std::endl;
         std::cout<<"-1\n";
         return;
     }
@@ -190,14 +174,6 @@ void refundTicket(const std::string &username,int n)
     );
     if(tmp.size()<n||tmp[tmp.size()-n].status==2)
     {
-        // if(username=="Schwarz"&&n==20)
-        // {
-        //     if(tmp.size()<n) std::cerr<<"Not have enough order"<<std::endl;
-        //     else
-        //     {
-        //         std::cerr<<"Order (tag = "<<tmp[tmp.size()-n].tag<<" ) is refunded"<<std::endl;
-        //     }
-        // }
         std::cout<<"-1\n";
         return;
     }
@@ -214,14 +190,8 @@ void refundTicket(const std::string &username,int n)
         return;
     }
 
-    sjtu::vector<Train> tmpt=Trains.find
-    (
-        Train(ro.train_id,0,0,"","",0,"","","",0),
-        Train(ro.train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-    );
-    assert(tmpt.size()==1);
-    Train t=tmpt.front();
-    Trains.remove(t);
+    Train t;
+    int t_pos=Trains.findFirstGe(Train(ro.train_id,0,0,"","",0,"","","",0),t);
 
     int sp=0,tp=0;
     for(sp=0;strcmp(ro.s_station,t.stations[sp]);sp++);
@@ -256,7 +226,7 @@ void refundTicket(const std::string &username,int n)
             Pend.remove(so);
         }
     }
-    Trains.insert(t);
+    Trains.dfo.write(t_pos,&t);
     std::cout<<"0\n";
 };
 // Others ****************************************************************************

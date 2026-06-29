@@ -68,10 +68,12 @@ public:
 };
 
 template <typename T, typename Hash,int N,int M> class BPlusTree {
+public:
+  FileOperator dfo;
+  Hash hash;
 private:
   int rt_pos, siz;
-  FileOperator fo,dfo;
-  Hash hash;
+  FileOperator fo;
   MemoryRiver<T, Hash, N, M> mr;
 
   inline void updateAncestors(int uid, int vp) noexcept;
@@ -90,9 +92,10 @@ public:
   inline bool remove(const T &t) noexcept;
   inline sjtu::vector<T> find(const HashResult &lh, const HashResult &rh) noexcept;
   inline sjtu::vector<T> find(const T &l, const T &r) noexcept; // find [l,r)
-  inline bool findFirstGe(const HashResult &h,T &res) noexcept;
-  inline bool findFirstGe(const T &t,T &res) noexcept;
+  inline int findFirstGe(const HashResult &h,T &res) noexcept;
+  inline int findFirstGe(const T &t,T &res) noexcept;
   inline int size() noexcept;
+  inline int locate(const HashResult &h) noexcept;
 
 
   inline void debugPrint(std::ostream &os) noexcept;

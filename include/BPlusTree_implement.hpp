@@ -413,24 +413,24 @@ sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const T &l, const T &r) noexcept {
   return find(lh,rh);
 }
 template <typename T, typename Hash,int N,int M>
-bool BPlusTree<T,Hash,N,M>::findFirstGe(const HashResult &h,T &res) noexcept {
+int BPlusTree<T,Hash,N,M>::findFirstGe(const HashResult &h,T &res) noexcept {
   std::pair<int, int> pr = lowerBound(h);
   // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
   Node<T,Hash,N,M> u(pr.first, fo, mr);
-  if(!HashResult::comp(u.ch_dat[pr.second],HashResult::positiveInfinity())) return 0;
+  if(!HashResult::comp(u.ch_dat[pr.second],HashResult::positiveInfinity())) return -1;
   dfo.read(u.ch_dat[pr.second].pos,&res);
-  return 1;
+  return u.ch_dat[pr.second].pos;
 }
 template <typename T, typename Hash,int N,int M>
-bool BPlusTree<T,Hash,N,M>::findFirstGe(const T &t,T &res) noexcept {
+int BPlusTree<T,Hash,N,M>::findFirstGe(const T &t,T &res) noexcept {
   std::pair<int, int> pr = lowerBound(hash(t));
   // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
   Node<T,Hash,N,M> u(pr.first, fo, mr);
-  if(!HashResult::comp(u.ch_dat[pr.second],HashResult::positiveInfinity())) return 0;
+  if(!HashResult::comp(u.ch_dat[pr.second],HashResult::positiveInfinity())) return -1;
   dfo.read(u.ch_dat[pr.second].pos,&res);
-  return 1;
+  return u.ch_dat[pr.second].pos;
 }
 template <typename T, typename Hash,int N,int M>
 int BPlusTree<T,Hash,N,M>::size() noexcept {
@@ -457,6 +457,15 @@ void BPlusTree<T,Hash,N,M>::innerDebugPrint(int uid,std::ostream &os) noexcept {
   for (int i = 0; i < u.ch_cnt; i++)
     innerDebugPrint(u.ch_pos[i],os);
 }
+template <typename T, typename Hash,int N,int M>
+int BPlusTree<T,Hash,N,M>::locate(const HashResult &h) noexcept
+{
+  std::pair<int, int> pr = lowerBound(h);
+  Node<T,Hash,N,M> u(pr.first, fo, mr);
+  if(HashResult::comp(h,u.ch_dat[pr.second])) return -1;
+  return u.ch_dat[pr.second].pos;
+}
+
 template <typename T, typename Hash,int N,int M>
 void BPlusTree<T,Hash,N,M>::debugPrint(std::ostream &os) noexcept {
   os << "BPT ***************************" << std::endl;

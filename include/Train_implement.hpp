@@ -147,45 +147,26 @@ inline bool deleteTrain(const std::string &_train_id)
 }
 inline bool releaseTrain(const std::string &_train_id)
 {
-    // if(_train_id=="LeavesofGrass") std::cerr<<"Releasing "<<_train_id<<std::endl;
-    // if(_train_id=="LeavesofGrass") Trains.debugPrint(std::cerr);
-    sjtu::vector<Train> tmp=Trains.find
-    (
-        Train(_train_id,0,0,"","",0,"","","",0),
-        Train(_train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-    );
-    // if(_train_id=="LeavesofGrass") if(tmp.size()==0) std::cerr<<"do not find train"<<std::endl;
-    if(tmp.size()!=1) return 0;
-
-    Train u=tmp.front();
+    Train u;
+    int u_pos=Trains.findFirstGe(Train(_train_id,0,0,"","",0,"","","",0),u);
+    if(u_pos==-1||u.train_id!=_train_id) return 0;
     if(u.is_released==1) return 0;
 
-    Trains.remove(u);
-
-    // std::cout<<"The first departure ******************"<<std::endl;
     for(int depar_date=u.sale_start;depar_date<=u.sale_end;depar_date++)
     {
         int d=depar_date,t=u.departure,sp=0,st=0;
         for(int i=0;i+1<u.station_num;i++)
         {
-            // if(depar_date==u.sale_start) std::cout<<"depar from "<<u.stations[i]<<" at date "<<d<<" time "<<t<<std::endl;
             Depar.insert(StationTimeTrain(u.stations[i],d,t,u.train_id,depar_date,u.departure,i,st,sp));
             utils::forward(d,t,u.travel_times[i]),st+=u.travel_times[i],sp+=u.prices[i];
-            // if(depar_date==u.sale_start) std::cout<<"Forward "<<u.travel_times[i]<<std::endl;
             
-            // if(depar_date==u.sale_start) std::cout<<"Arrive  at "<<u.stations[i+1]<<" at date "<<d<<" time "<<t<<std::endl;
             Arriv.insert(StationTimeTrain(u.stations[i+1],d,t,u.train_id,depar_date,u.departure,i+1,st,sp));
             utils::forward(d,t,u.stop_times[i+1]),st+=u.stop_times[i+1];
-            // if(depar_date==u.sale_start) std::cout<<"Forward "<<u.stop_times[i+1]<<std::endl;
         }
     }
-    // std::cout<<"**************************************"<<std::endl;
-    // std::cout<<"Released"<<std::endl;
-    // Depar.debugPrint();
-    // Arriv.debugPrint();
 
-    u.is_released=1;
-    Trains.insert(u);
+    static bool one=1;
+    Trains.dfo.write(u_pos+Train::memory_size-1,&one);
     return 1;
 }
 bool queryTrain(const std::string &_train_id,int date)
@@ -245,16 +226,6 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         if(tmpT[a].train_id_h!=tmpT[b].train_id_h) return tmpT[a].train_id_h<tmpT[b].train_id_h;
         return tmpT[a].start_date<tmpT[b].start_date;
     });
-    // if(S=="黑龙江省双城市"&&T=="天津市")
-    // {
-    //     std::cerr<<"Find it"<<std::endl;
-    //     std::cerr<<"S ( "<<tmpS.size()<<" ) : ";
-    //     for(int i=0;i<tmpS.size();i++) std::cerr<<"< "<<tmpS[pS[i]].train_id_h.first<<" , "<<tmpS[pS[i]].train_id_h.second<<" , "<<tmpS[pS[i]].start_date<<" > ";
-    //     std::cerr<<std::endl;
-    //     std::cerr<<"T ( "<<tmpT.size()<<" ) : ";
-    //     for(int i=0;i<tmpT.size();i++) std::cerr<<"< "<<tmpT[pT[i]].train_id_h.first<<" , "<<tmpT[pT[i]].train_id_h.second<<" , "<<tmpT[pT[i]].start_date<<" > ";
-    //     std::cerr<<std::endl;
-    // }
 
     sjtu::vector<QueryTicketResult> res;
     for(int i=0,j=0;i<tmpS.size();i++)
@@ -298,9 +269,6 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     for(int i=0;i<res.size();i++)
     {
         int x=p[i];
-        // if(S=="北京市"&&T=="辽宁省沈阳市"&&res[x].price==22751) std::cerr<<"22751: time = "<<res[x].time<<std::endl;
-        // if(S=="北京市"&&T=="辽宁省沈阳市"&&res[x].price==22751) std::cerr<<"22751: time = "<<res[x].time<<std::endl;
-
         std::cout<<res[x].train_id<<" "
                  <<res[x].s<<" "<<utils::intToDate(res[x].s_date)<<" "<<utils::intToTime(res[x].s_time)<<" -> "
                  <<res[x].t<<" "<<utils::intToDate(res[x].t_date)<<" "<<utils::intToTime(res[x].t_time)<<" "
@@ -347,7 +315,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
         StationTimeTrain(T,200,0,"",0,0,0,0,0)
     );
-    // std::cout<<"Arriv size : "<<tmp.size()<<std::endl;
     for(const StationTimeTrain &x:tmp)
     {
         if(T_id.count(x.train_id_h)) continue;
@@ -356,9 +323,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         Trains.findFirstGe(hr,u);
         rhash[x.train_id_h]=u.train_id;
 
-        // std::cout<<"Now in Train "<<u<<"( stations = ";
-        // for(int i=0;i<u.station_num;i++) std::cout<<u.stations[i]<<" ";
-        // std::cout<<") finding station"<<
         for(int sn=0;strcmp(T.c_str(),u.stations[sn]);sn++)
         {
             pair<int,int> hp(utils::stringHash(u.stations[sn],0),utils::stringHash(u.stations[sn],1));
@@ -366,7 +330,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         }
         T_pri[x.train_id_h]=x.s_price,T_tme[x.train_id_h]=x.s_time,T_id[x.train_id_h]=x.sta_id;
     }
-    // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Maps get"<<std::endl;
 
     QueryTransferResult mnv
     (
@@ -440,7 +403,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     {
         if(pr.second==0||T_sta[pr.first]==0||(pr.first.first==utils::stringHash(S,0)&&pr.first.second==utils::stringHash(S,1))||(pr.first.first==utils::stringHash(T,0)&&pr.first.second==utils::stringHash(T,1))) continue;
         const std::string &sta_name=rhash[pr.first];
-        // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Station "<<sta_name<<" is ok for transfer"<<std::endl;
 
         sjtu::vector<StationTimeTrain> A,tmpA=Arriv.find
         (
@@ -468,7 +430,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             if(it==T_id.end()||it->second<=stt.sta_id) continue;
             B.push_back(stt);
         }
-        // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"A and B get"<<std::endl;
 
         if(A.empty()||B.empty()) continue;
 
@@ -485,7 +446,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             if(B[a].date!=B[b].date) return B[a].date<B[b].date;
             return B[a].time<B[b].time;
         });
-        // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Sorted"<<std::endl;
 
         static int suf_mnp[50010][2];
         suf_mnp[B.size()][0]=suf_mnp[B.size()][1]=B.size();
@@ -500,18 +460,6 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             }
             if(suf_mnp[i][1]==B.size()||cmp_trn(B[add],B[suf_mnp[i][1]])) std::swap(add,suf_mnp[i][1]);
         }
-        // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Suf mnp get"<<std::endl;
-        // if(S=="广东省惠阳市"&&T=="江苏省高邮市")
-        // {
-        //     std::cerr<<"A : ";
-        //     for(const StationTimeTrain &stt:A)
-        //     {
-        //         std::cerr<<"( "<<stt.train_id<<" , now "
-        //                  <<utils::intToDate(stt.date)<<" , "<<utils::intToTime(stt.time)<<" , srt"
-        //                  <<utils::intToDate(stt.start_date)<<" , "<<utils::intToTime(stt.start_time)<<" )";
-        //     }
-        //     std::cerr<<std::endl;
-        // }
 
         for(int ni=0,jp=0;ni<A.size();ni++)
         {

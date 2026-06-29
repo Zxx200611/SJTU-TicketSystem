@@ -68,8 +68,8 @@ public:
     inline QueryTransferResult(const QueryTicketResult &a,const QueryTicketResult &b);
 };
 
-BPlusTree<Train,TrainHashByIdAndStationNum,80,500> Trains("Trains");
-BPlusTree<StationTimeTrain,STTHaashByStationAndTime,80,1000> Arriv("Arriv"),Depar("Depar");
+BPlusTree<Train,TrainHashByIdAndStationNum,80,501> Trains("Trains");
+BPlusTree<StationTimeTrain,STTHaashByStationAndTime,80,1001> Arriv("Arriv"),Depar("Depar");
 
 inline bool addTrain(const std::string &_train_id,int _station_num,int _seat_num
                     ,const std::string &_stations,const std::string &_prices,int _departure

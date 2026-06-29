@@ -81,8 +81,8 @@ inline bool queryProfile(const std::string &c,const std::string &u)
 {
     if(login_list[c]==0) return 0;
     User C,U;
-    if(!Users.findFirstGe(User(c,-1),C)||C.username!=c) return 0;
-    if(!Users.findFirstGe(User(u,-1),U)||U.username!=u) return 0;
+    if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;
+    if(Users.findFirstGe(User(u,-1),U)==-1||U.username!=u) return 0;
     
     if(c!=u&&C.privilege<=U.privilege) return 0;
     std::cout<<U.username<<" ";
@@ -96,8 +96,8 @@ inline bool modifyProfile(const std::string &c,const std::string &u,const std::s
 {
     if(login_list[c]==0) return 0;
     User C,U;
-    if(!Users.findFirstGe(User(c,-1),C)||C.username!=c) return 0;
-    if(!Users.findFirstGe(User(u,-1),U)||U.username!=u) return 0;
+    if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;
+    if(Users.findFirstGe(User(u,-1),U)==-1||U.username!=u) return 0;
 
     if(c!=u&&C.privilege<=U.privilege) return 0;
     if(_privilege!=-1&&C.privilege<=_privilege) return 0;

@@ -38,6 +38,15 @@ public:
         pwrite(fd, reinterpret_cast<const char*>(t), sizeof(int), pos + header_size);
         update_size(pos + header_size, sizeof(int));
     }
+    inline void write(int pos, bool *t) noexcept {
+        pwrite(fd, reinterpret_cast<const char*>(t), sizeof(bool), pos + header_size);
+        update_size(pos + header_size, sizeof(bool));
+    }
+    inline void write2(int pos, int *t, int count) noexcept {
+        int len = count * sizeof(int);
+        pwrite(fd, reinterpret_cast<const char*>(t), len, pos + header_size);
+        update_size(pos + header_size, len);
+    }
 
     inline int size() noexcept { return cached_size - header_size; }
 
