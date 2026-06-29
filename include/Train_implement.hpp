@@ -57,26 +57,26 @@ HashResult TrainHashByIdAndStationNum::operator () (const Train &a)
 // Train******************************************************************************
 
 // StationTimeTrain*******************************************************************
-StationTimeTrain::StationTimeTrain():station(""),train_id(""),date(0),time(0){}
+StationTimeTrain::StationTimeTrain():station_h(0,0),train_id_h(0,0),date(0),time(0){}
 StationTimeTrain::StationTimeTrain(const std::string &_station,int _date,int _time,const std::string &_train_id
                                   ,int _start_date,int _start_time,int _sta_id,int _s_time,int _s_price)
 {
     date=_date,time=_time;
     start_date=_start_date,start_time=_start_time;
     sta_id=_sta_id,s_time=_s_time,s_price=_s_price;
-    strcpy(station,_station.c_str());
-    strcpy(train_id,_train_id.c_str());
+    station_h=std::make_pair(utils::stringHash(_station,0),utils::stringHash(_station,1));
+    train_id_h=std::make_pair(utils::stringHash(_train_id,0),utils::stringHash(_train_id,1));
 }
 
 HashResult STTHaashByStationAndTime::operator () (const StationTimeTrain &a)
 {
     HashResult res;
-    res.t[0]=utils::stringHash(a.station,0);
-    res.t[1]=utils::stringHash(a.station,1);
+    res.t[0]=a.station_h.first;
+    res.t[1]=a.station_h.second;
     res.t[2]=a.date;
     res.t[3]=a.time;
-    res.t[4]=utils::stringHash(a.train_id,0);
-    res.t[5]=utils::stringHash(a.train_id,1);
+    res.t[4]=a.train_id_h.first;
+    res.t[5]=a.train_id_h.second;
     return res;
 }
 // StationTimeTrain*******************************************************************
@@ -231,38 +231,47 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
         StationTimeTrain(T,date+3,1440,"",0,0,0,0,0)
     );
-    
+
     static int pS[50010],pT[50010];
     for(int i=0;i<tmpS.size();i++) pS[i]=i;
     for(int i=0;i<tmpT.size();i++) pT[i]=i;
     utils::sort(pS,pS+tmpS.size(),[&](int a,int b)
     {
-        int x=strcmp(tmpS[a].train_id,tmpS[b].train_id);
-        if(x==0) return tmpS[a].start_date<tmpS[b].start_date;
-        return x<0;
+        if(tmpS[a].train_id_h!=tmpS[b].train_id_h) return tmpS[a].train_id_h<tmpS[b].train_id_h;
+        return tmpS[a].start_date<tmpS[b].start_date;
     });
     utils::sort(pT,pT+tmpT.size(),[&](int a,int b)
     {
-        int x=strcmp(tmpT[a].train_id,tmpT[b].train_id);
-        if(x==0) return tmpT[a].start_date<tmpT[b].start_date;
-        return x<0;
+        if(tmpT[a].train_id_h!=tmpT[b].train_id_h) return tmpT[a].train_id_h<tmpT[b].train_id_h;
+        return tmpT[a].start_date<tmpT[b].start_date;
     });
+    // if(S=="黑龙江省双城市"&&T=="天津市")
+    // {
+    //     std::cerr<<"Find it"<<std::endl;
+    //     std::cerr<<"S ( "<<tmpS.size()<<" ) : ";
+    //     for(int i=0;i<tmpS.size();i++) std::cerr<<"< "<<tmpS[pS[i]].train_id_h.first<<" , "<<tmpS[pS[i]].train_id_h.second<<" , "<<tmpS[pS[i]].start_date<<" > ";
+    //     std::cerr<<std::endl;
+    //     std::cerr<<"T ( "<<tmpT.size()<<" ) : ";
+    //     for(int i=0;i<tmpT.size();i++) std::cerr<<"< "<<tmpT[pT[i]].train_id_h.first<<" , "<<tmpT[pT[i]].train_id_h.second<<" , "<<tmpT[pT[i]].start_date<<" > ";
+    //     std::cerr<<std::endl;
+    // }
 
     sjtu::vector<QueryTicketResult> res;
     for(int i=0,j=0;i<tmpS.size();i++)
     {
-        int cmp_res=(j==tmpT.size()?0:strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id));
+        int cmp_res=(j==tmpT.size()?0:(tmpT[pT[j]].train_id_h==tmpS[pS[i]].train_id_h?0:(tmpT[pT[j]].train_id_h<tmpS[pS[i]].train_id_h?-1:1)));
         while(j<tmpT.size()&&(cmp_res<0||(cmp_res==0&&tmpT[pT[j]].start_date<tmpS[pS[i]].start_date)))
         {
             j++;
-            cmp_res=(j==tmpT.size()?0:strcmp(tmpT[pT[j]].train_id,tmpS[pS[i]].train_id));
+            cmp_res=(j==tmpT.size()?0:(tmpT[pT[j]].train_id_h==tmpS[pS[i]].train_id_h?0:(tmpT[pT[j]].train_id_h<tmpS[pS[i]].train_id_h?-1:1)));
         }
         if(j<tmpT.size()&&cmp_res==0&&tmpT[pT[j]].start_date==tmpS[pS[i]].start_date)
         {
             if(tmpS[pS[i]].sta_id>=tmpT[pT[j]].sta_id) continue;
             
             Train u;
-            Trains.findFirstGe(Train(tmpS[pS[i]].train_id,0,0,"","",0,"","","",0),u);
+            HashResult hr;hr.t[0]=tmpS[pS[i]].train_id_h.first,hr.t[1]=tmpS[pS[i]].train_id_h.second;
+            Trains.findFirstGe(hr,u);
 
             int mnst=1e8;
             for(int k=tmpS[pS[i]].sta_id;k!=tmpT[pT[j]].sta_id;k++)
@@ -272,7 +281,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
 
             res.push_back(QueryTicketResult
             (
-                tmpS[pS[i]].train_id,S,T,tmpS[pS[i]].date,tmpS[pS[i]].time,tmpT[pT[j]].date,
+                u.train_id,S,T,tmpS[pS[i]].date,tmpS[pS[i]].time,tmpT[pT[j]].date,
                 tmpT[pT[j]].time,tmpT[pT[j]].s_time-tmpS[pS[i]].s_time,tmpT[pT[j]].s_price-tmpS[pS[i]].s_price,mnst
             ));
         }
@@ -281,14 +290,17 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     static int p[50010];
     for(int i=0;i<res.size();i++) p[i]=i;
     std::function<bool(int,int)> comp;
-    if(cmp=="time") comp=[&](int a,int b)->bool {return res[a].time<res[b].time;};
-    else            comp=[&](int a,int b)->bool {return res[a].price<res[b].price;};
+    if(cmp=="time") comp=[&](int a,int b)->bool {return res[a].time ==res[b].time ?strcmp(res[a].train_id,res[b].train_id)<0:res[a].time <res[b].time ;};
+    else            comp=[&](int a,int b)->bool {return res[a].price==res[b].price?strcmp(res[a].train_id,res[b].train_id)<0:res[a].price<res[b].price;};
     utils::sort(p,p+res.size(),comp);
 
     std::cout<<res.size()<<'\n';
     for(int i=0;i<res.size();i++)
     {
         int x=p[i];
+        // if(S=="北京市"&&T=="辽宁省沈阳市"&&res[x].price==22751) std::cerr<<"22751: time = "<<res[x].time<<std::endl;
+        // if(S=="北京市"&&T=="辽宁省沈阳市"&&res[x].price==22751) std::cerr<<"22751: time = "<<res[x].time<<std::endl;
+
         std::cout<<res[x].train_id<<" "
                  <<res[x].s<<" "<<utils::intToDate(res[x].s_date)<<" "<<utils::intToTime(res[x].s_time)<<" -> "
                  <<res[x].t<<" "<<utils::intToDate(res[x].t_date)<<" "<<utils::intToTime(res[x].t_time)<<" "
@@ -299,8 +311,9 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
 void queryTransfer(const std::string &S,const std::string &T,int date,const std::string &cmp)
 {
     // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Get this transfer"<<std::endl;
-    static sjtu::map<std::string,bool> S_sta,T_sta;
-    static sjtu::map<std::string,int>  S_pri,T_pri,S_tme,T_tme,S_id,T_id;
+    static sjtu::map<std::pair<int,int>,std::string> rhash;
+    static sjtu::map<std::pair<int,int>,bool> S_sta,T_sta;
+    static sjtu::map<std::pair<int,int>,int>  S_pri,T_pri,S_tme,T_tme,S_id,T_id;
     S_sta.clear(),S_pri.clear(),S_tme.clear(),S_id.clear();
     T_sta.clear(),T_pri.clear(),T_tme.clear(),T_id.clear();
 
@@ -312,15 +325,21 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     // std::cout<<"Depar size : "<<tmp.size()<<std::endl;
     for(const StationTimeTrain &x:tmp)
     {
-        if(S_id.count(x.train_id)) continue;
+        if(S_id.count(x.train_id_h)) continue;
 
         Train u;
-        Trains.findFirstGe(Train(x.train_id,0,0,"","",0,"","","",0),u);
+        HashResult hr;hr.t[0]=x.train_id_h.first,hr.t[1]=x.train_id_h.second;
+        Trains.findFirstGe(hr,u);
+        rhash[x.train_id_h]=u.train_id;
 
         int sn=0;
         while(strcmp(S.c_str(),u.stations[sn])) sn++;
-        for(int i=sn+1;i<u.station_num;i++) S_sta[u.stations[i]]=1;
-        S_pri[x.train_id]=x.s_price,S_tme[x.train_id]=x.s_time,S_id[x.train_id]=x.sta_id;
+        for(int i=sn+1;i<u.station_num;i++)
+        {
+            pair<int,int> hp(utils::stringHash(u.stations[i],0),utils::stringHash(u.stations[i],1));
+            S_sta[hp]=1,rhash[hp]=u.stations[i];
+        }
+        S_pri[x.train_id_h]=x.s_price,S_tme[x.train_id_h]=x.s_time,S_id[x.train_id_h]=x.sta_id;
     }
 
     tmp=Arriv.find
@@ -331,21 +350,21 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     // std::cout<<"Arriv size : "<<tmp.size()<<std::endl;
     for(const StationTimeTrain &x:tmp)
     {
-        if(T_id.count(x.train_id)) continue;
-        sjtu::vector<Train> tmpt=Trains.find
-        (
-            Train(x.train_id,0,0,"","",0,"","","",0),
-            Train(x.train_id,Train::max_station_cnt+1,0,"","",0,"","","",0)
-        );
-
-        assert(tmpt.size()==1);
-        const Train &u=tmpt.front();
+        if(T_id.count(x.train_id_h)) continue;
+        Train u;
+        HashResult hr;hr.t[0]=x.train_id_h.first,hr.t[1]=x.train_id_h.second;
+        Trains.findFirstGe(hr,u);
+        rhash[x.train_id_h]=u.train_id;
 
         // std::cout<<"Now in Train "<<u<<"( stations = ";
         // for(int i=0;i<u.station_num;i++) std::cout<<u.stations[i]<<" ";
         // std::cout<<") finding station"<<
-        for(int sn=0;strcmp(T.c_str(),u.stations[sn]);sn++) T_sta[u.stations[sn]]=1;
-        T_pri[x.train_id]=x.s_price,T_tme[x.train_id]=x.s_time,T_id[x.train_id]=x.sta_id;
+        for(int sn=0;strcmp(T.c_str(),u.stations[sn]);sn++)
+        {
+            pair<int,int> hp(utils::stringHash(u.stations[sn],0),utils::stringHash(u.stations[sn],1));
+            T_sta[hp]=1,rhash[hp]=u.stations[sn];
+        }
+        T_pri[x.train_id_h]=x.s_price,T_tme[x.train_id_h]=x.s_time,T_id[x.train_id_h]=x.sta_id;
     }
     // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Maps get"<<std::endl;
 
@@ -375,15 +394,15 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         };
         cmp_trn=[&](const StationTimeTrain &a,const StationTimeTrain &b)->bool
         {
-            int da=a.date,ta=a.time;utils::forward(da,ta,T_tme[a.train_id]-a.s_time);
-            int db=b.date,tb=b.time;utils::forward(db,tb,T_tme[b.train_id]-b.s_time);
+            int da=a.date,ta=a.time;utils::forward(da,ta,T_tme[a.train_id_h]-a.s_time);
+            int db=b.date,tb=b.time;utils::forward(db,tb,T_tme[b.train_id_h]-b.s_time);
             if(da!=db) return da<db;
             if(ta!=tb) return ta<tb;
 
-            int pa=T_pri[a.train_id]-a.s_price,pb=T_pri[b.train_id]-b.s_price;
+            int pa=T_pri[a.train_id_h]-a.s_price,pb=T_pri[b.train_id_h]-b.s_price;
             if(pa!=pb) return pa<pb;
 
-            return strcmp(a.train_id,b.train_id)<0;
+            return rhash[a.train_id_h]<rhash[b.train_id_h];
         };
     }
     else
@@ -405,22 +424,22 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         };
         cmp_trn=[&](const StationTimeTrain &a,const StationTimeTrain &b)->bool
         {
-            int pa=T_pri[a.train_id]-a.s_price,pb=T_pri[b.train_id]-b.s_price;
+            int pa=T_pri[a.train_id_h]-a.s_price,pb=T_pri[b.train_id_h]-b.s_price;
             if(pa!=pb) return pa<pb;
 
-            int da=a.date,ta=a.time;utils::forward(da,ta,T_tme[a.train_id]-a.s_time);
-            int db=b.date,tb=b.time;utils::forward(db,tb,T_tme[b.train_id]-b.s_time);
+            int da=a.date,ta=a.time;utils::forward(da,ta,T_tme[a.train_id_h]-a.s_time);
+            int db=b.date,tb=b.time;utils::forward(db,tb,T_tme[b.train_id_h]-b.s_time);
             if(da!=db) return da<db;
             if(ta!=tb) return ta<tb;
 
-            return strcmp(a.train_id,b.train_id)<0;
+            return rhash[a.train_id_h]<rhash[b.train_id_h];
         };
     }
 
     for(auto pr:S_sta)
     {
-        if(pr.second==0||T_sta[pr.first]==0||pr.first==S||pr.first==T) continue;
-        const std::string &sta_name=pr.first;
+        if(pr.second==0||T_sta[pr.first]==0||(pr.first.first==utils::stringHash(S,0)&&pr.first.second==utils::stringHash(S,1))||(pr.first.first==utils::stringHash(T,0)&&pr.first.second==utils::stringHash(T,1))) continue;
+        const std::string &sta_name=rhash[pr.first];
         // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Station "<<sta_name<<" is ok for transfer"<<std::endl;
 
         sjtu::vector<StationTimeTrain> A,tmpA=Arriv.find
@@ -431,9 +450,9 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         for(const StationTimeTrain &stt:tmpA)
         {
             int s_date=stt.date,s_time=stt.time;
-            utils::forward(s_date,s_time,S_tme[stt.train_id]-stt.s_time);
+            utils::forward(s_date,s_time,S_tme[stt.train_id_h]-stt.s_time);
             if(s_date!=date) continue;
-            auto it=S_id.find(stt.train_id);
+            auto it=S_id.find(stt.train_id_h);
             if(it==S_id.end()||it->second>=stt.sta_id) continue;
             A.push_back(stt);
         }
@@ -445,7 +464,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         );
         for(const StationTimeTrain &stt:tmpB)
         {
-            auto it=T_id.find(stt.train_id);
+            auto it=T_id.find(stt.train_id_h);
             if(it==T_id.end()||it->second<=stt.sta_id) continue;
             B.push_back(stt);
         }
@@ -477,7 +496,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             if(suf_mnp[i][0]==B.size()||cmp_trn(B[add],B[suf_mnp[i][0]]))
             {
                 std::swap(add,suf_mnp[i][0]);
-                if(add==B.size()||strcmp(B[suf_mnp[i][0]].train_id,B[add].train_id)==0) continue; 
+                if(add==B.size()||B[suf_mnp[i][0]].train_id_h==B[add].train_id_h) continue; 
             }
             if(suf_mnp[i][1]==B.size()||cmp_trn(B[add],B[suf_mnp[i][1]])) std::swap(add,suf_mnp[i][1]);
         }
@@ -500,19 +519,19 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             while(jp!=B.size()&&utils::timeDelta(A[i].date,A[i].time,B[jp].date,B[jp].time)<0) jp++;
             if(jp!=B.size())
             {
-                int j=(strcmp(A[i].train_id,B[suf_mnp[jp][0]].train_id)==0?suf_mnp[jp][1]:suf_mnp[jp][0]);
+                int j=(A[i].train_id_h==B[suf_mnp[jp][0]].train_id_h?suf_mnp[jp][1]:suf_mnp[jp][0]);
                 if(j==B.size()) continue;
 
-                int s_date=A[i].date,s_time=A[i].time;utils::forward(s_date,s_time,S_tme[A[i].train_id]-A[i].s_time);
-                int t_date=B[j].date,t_time=B[j].time;utils::forward(t_date,t_time,T_tme[B[j].train_id]-B[j].s_time);
+                int s_date=A[i].date,s_time=A[i].time;utils::forward(s_date,s_time,S_tme[A[i].train_id_h]-A[i].s_time);
+                int t_date=B[j].date,t_time=B[j].time;utils::forward(t_date,t_time,T_tme[B[j].train_id_h]-B[j].s_time);
                 QueryTransferResult nw
                 (
-                    QueryTicketResult(A[i].train_id,S,A[i].station,s_date,s_time
-                                     ,A[i].date,A[i].time,A[i].s_time-S_tme[A[i].train_id]
-                                     ,A[i].s_price-S_pri[A[i].train_id],0),
-                    QueryTicketResult(B[j].train_id,B[j].station,T,B[j].date,B[j].time
-                                     ,t_date,t_time,T_tme[B[j].train_id]-B[j].s_time
-                                     ,T_pri[B[j].train_id]-B[j].s_price,0)
+                    QueryTicketResult(rhash[A[i].train_id_h],S,rhash[A[i].station_h],s_date,s_time
+                                     ,A[i].date,A[i].time,A[i].s_time-S_tme[A[i].train_id_h]
+                                     ,A[i].s_price-S_pri[A[i].train_id_h],0),
+                    QueryTicketResult(rhash[B[j].train_id_h],rhash[B[j].station_h],T,B[j].date,B[j].time
+                                     ,t_date,t_time,T_tme[B[j].train_id_h]-B[j].s_time
+                                     ,T_pri[B[j].train_id_h]-B[j].s_price,0)
                 );
                 // if(S=="广东省惠阳市"&&T=="江苏省高邮市")
                 // {
@@ -539,8 +558,10 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     );
     assert(tmp1.size()==1);
     const Train &t1=tmp1.front();
-    int start_date1=mnv.ta.s_date,start_time1=mnv.ta.s_time,id1=S_id[mnv.ta.train_id];
-    utils::forward(start_date1,start_time1,-S_tme[mnv.ta.train_id]);
+    std::pair<int,int> mnv_ta_trnid_h(utils::stringHash(mnv.ta.train_id,0),utils::stringHash(mnv.ta.train_id,1));
+    std::pair<int,int> mnv_tb_trnid_h(utils::stringHash(mnv.tb.train_id,0),utils::stringHash(mnv.tb.train_id,1));
+    int start_date1=mnv.ta.s_date,start_time1=mnv.ta.s_time,id1=S_id[mnv_ta_trnid_h];
+    utils::forward(start_date1,start_time1,-S_tme[mnv_ta_trnid_h]);
     for(int i=id1;strcmp(t1.stations[i],mnv.ta.t);i++) mnst1=std::min(mnst1,t1.seats[start_date1][i]);
     // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<utils::intToDate(mnv.ta.t_date)<<std::endl;
 
@@ -551,7 +572,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     );
     assert(tmp2.size()==1);
     const Train &t2=tmp2.front();
-    int start_date2=t2.sale_start,start_time2=t2.departure,id2=T_id[mnv.tb.train_id],id2s=0;
+    int start_date2=t2.sale_start,start_time2=t2.departure,id2=T_id[mnv_tb_trnid_h],id2s=0;
     for(;strcmp(t2.stations[id2s],mnv.tb.s);id2s++)
     {
         utils::forward(start_date2,start_time2,t2.travel_times[id2s]);

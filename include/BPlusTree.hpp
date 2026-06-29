@@ -90,6 +90,7 @@ public:
   inline bool remove(const T &t) noexcept;
   inline sjtu::vector<T> find(const HashResult &lh, const HashResult &rh) noexcept;
   inline sjtu::vector<T> find(const T &l, const T &r) noexcept; // find [l,r)
+  inline bool findFirstGe(const HashResult &h,T &res) noexcept;
   inline bool findFirstGe(const T &t,T &res) noexcept;
   inline int size() noexcept;
 

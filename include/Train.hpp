@@ -3,6 +3,7 @@
 #include<BPlusTree.hpp>
 #include<Utilities.hpp>
 #include<Vector.hpp>
+#include<utility>
 #include<iostream>
 
 #pragma pack(1)
@@ -32,9 +33,11 @@ public:
 class StationTimeTrain
 {
 public:
-    static const int memory_size=35+25+4*7;
-    char station[35],train_id[25];
-    int date,time,start_date,start_time,sta_id,s_time,s_price;
+    static const int memory_size=8+8+2*6+4;
+    // char station[35],train_id[25];
+    std::pair<int,int> station_h,train_id_h;
+    short date,time,start_date,start_time,sta_id,s_time;
+    int s_price;
 
     inline StationTimeTrain();
     inline StationTimeTrain(const std::string &_station,int _date,int _time,const std::string&_train_id
@@ -82,9 +85,9 @@ inline std::ostream& operator << (std::ostream &os,const Train &t)
 {
     return os<<"["<<t.train_id<<","<<t.station_num<<"]";
 }
-inline std::ostream& operator << (std::ostream &os,const StationTimeTrain &t)
-{
-    return os<<"["<<t.station<<","<<t.date<<","<<t.time<<","<<t.train_id<<", sid="<<t.sta_id<<", startdate = "<<t.start_date<<" ]";
-}
+// inline std::ostream& operator << (std::ostream &os,const StationTimeTrain &t)
+// {
+//     return os<<"["<<t.station<<","<<t.date<<","<<t.time<<","<<t.train_id<<", sid="<<t.sta_id<<", startdate = "<<t.start_date<<" ]";
+// }
 
 #include<Train_implement.hpp>
