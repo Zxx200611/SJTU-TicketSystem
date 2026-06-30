@@ -37,6 +37,7 @@ HashResult UserHashByUsernameAndPriv::operator() (const User &a)
 inline bool addUser(const std::string &c,const std::string &u,const std::string &_passwd
                    ,const std::string &_chinese_name,const std::string &_mail,int _privilege)
 {
+    // Timer timer(__func__);
     // std::cout<<"User count = "<<Users.size()<<std::endl;
     if(Users.size()==0)
     {
@@ -58,6 +59,7 @@ inline bool addUser(const std::string &c,const std::string &u,const std::string 
 }
 inline bool login(const std::string &_username,const std::string &_passwd)
 {
+    // Timer timer(__func__);
     if(login_list[_username]==1) return 0;
     sjtu::vector<User> tmp=Users.find(User(_username,-1),User(_username,11));
     // std::cout<<"User "<<_username<<" logging in, find "<<tmp.size()<<" users"<<std::endl;
@@ -73,12 +75,14 @@ inline bool login(const std::string &_username,const std::string &_passwd)
 }
 inline bool logout(const std::string &_username)
 {
+    // Timer timer(__func__);
     if(login_list[_username]==0) return 0;
     login_list[_username]=0;
     return 1;
 }
 inline bool queryProfile(const std::string &c,const std::string &u)
 {
+    // Timer timer(__func__);
     if(login_list[c]==0) return 0;
     User C,U;
     if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;
@@ -94,6 +98,7 @@ inline bool queryProfile(const std::string &c,const std::string &u)
 inline bool modifyProfile(const std::string &c,const std::string &u,const std::string &_passwd
                          ,const std::string &_chinese_name,const std::string &_mail,int _privilege)
 {
+    // Timer timer(__func__);
     if(login_list[c]==0) return 0;
     User C,U;
     if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;

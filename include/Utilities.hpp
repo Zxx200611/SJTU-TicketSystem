@@ -1,5 +1,7 @@
 #pragma once
 
+#include<Timer.hpp>
+
 #include<Vector.hpp>
 #include<Map.hpp>
 #include<string>
@@ -55,6 +57,7 @@ void sort(T *s,T *t,const Compare &comp)
 inline
 int stringHash(const std::string &s,int pid)
 {
+    Timer timer(__func__);
     int res=0;
     for(int i=0,w=1;i<s.size();i++,w=1ll*w*hash_base%hash_primes[pid])
     {

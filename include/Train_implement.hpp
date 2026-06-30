@@ -107,6 +107,7 @@ inline bool addTrain(const std::string &_train_id,int _station_num,int _seat_num
                     ,const std::string &_travel_times,const std::string &_stop_times
                     ,const std::string _sale_date,char _type)
 {
+    // Timer timer(__func__);
     // std::cout<<"addtrain Stations1 : "<<_stations<<std::endl;
     // Trains.debugPrint();
     // std::cout<<"addtrain Stations2 : "<<_stations<<std::endl;
@@ -133,6 +134,7 @@ inline bool addTrain(const std::string &_train_id,int _station_num,int _seat_num
 }
 inline bool deleteTrain(const std::string &_train_id)
 {
+    // Timer timer(__func__);
     sjtu::vector<Train> tmp=Trains.find
     (
         Train(_train_id,0,0,"","",0,"","","",0),
@@ -147,22 +149,22 @@ inline bool deleteTrain(const std::string &_train_id)
 }
 inline bool releaseTrain(const std::string &_train_id)
 {
+    // Timer timer(__func__);
     Train u;
     int u_pos=Trains.findFirstGe(Train(_train_id,0,0,"","",0,"","","",0),u);
     if(u_pos==-1||u.train_id!=_train_id) return 0;
     if(u.is_released==1) return 0;
 
-    for(int depar_date=u.sale_start;depar_date<=u.sale_end;depar_date++)
+    int d=0,t=u.departure,sp=0,st=0;
+    for(int i=0;i+1<u.station_num;i++)
     {
-        int d=depar_date,t=u.departure,sp=0,st=0;
-        for(int i=0;i+1<u.station_num;i++)
-        {
-            Depar.insert(StationTimeTrain(u.stations[i],d,t,u.train_id,depar_date,u.departure,i,st,sp));
-            utils::forward(d,t,u.travel_times[i]),st+=u.travel_times[i],sp+=u.prices[i];
-            
-            Arriv.insert(StationTimeTrain(u.stations[i+1],d,t,u.train_id,depar_date,u.departure,i+1,st,sp));
-            utils::forward(d,t,u.stop_times[i+1]),st+=u.stop_times[i+1];
-        }
+        for(int depar_date=u.sale_start;depar_date<=u.sale_end;depar_date++)
+            Depar.insert(StationTimeTrain(u.stations[i],d+depar_date,t,u.train_id,depar_date,u.departure,i,st,sp));
+        utils::forward(d,t,u.travel_times[i]),st+=u.travel_times[i],sp+=u.prices[i];
+        
+        for(int depar_date=u.sale_start;depar_date<=u.sale_end;depar_date++)
+            Arriv.insert(StationTimeTrain(u.stations[i+1],d+depar_date,t,u.train_id,depar_date,u.departure,i+1,st,sp));
+        utils::forward(d,t,u.stop_times[i+1]),st+=u.stop_times[i+1];
     }
 
     static bool one=1;
@@ -171,6 +173,7 @@ inline bool releaseTrain(const std::string &_train_id)
 }
 bool queryTrain(const std::string &_train_id,int date)
 {
+    // Timer timer(__func__);
     if(date<0) return 0;
     sjtu::vector<Train> tmp=Trains.find
     (
@@ -202,6 +205,7 @@ bool queryTrain(const std::string &_train_id,int date)
 }
 void queryTicket(const std::string &S,const std::string &T,int date,const std::string &cmp)
 {
+    // Timer timer(__func__);
     sjtu::vector<StationTimeTrain> tmpS=Depar.find
     (
         StationTimeTrain(S,date,0,"",0,0,0,0,0),
@@ -219,12 +223,14 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     utils::sort(pS,pS+tmpS.size(),[&](int a,int b)
     {
         if(tmpS[a].train_id_h!=tmpS[b].train_id_h) return tmpS[a].train_id_h<tmpS[b].train_id_h;
-        return tmpS[a].start_date<tmpS[b].start_date;
+        if(tmpS[a].start_date!=tmpS[b].start_date) return tmpS[a].start_date<tmpS[b].start_date;
+        return a<b;
     });
     utils::sort(pT,pT+tmpT.size(),[&](int a,int b)
     {
         if(tmpT[a].train_id_h!=tmpT[b].train_id_h) return tmpT[a].train_id_h<tmpT[b].train_id_h;
-        return tmpT[a].start_date<tmpT[b].start_date;
+        if(tmpT[a].start_date!=tmpT[b].start_date) return tmpT[a].start_date<tmpT[b].start_date;
+        return a<b;
     });
 
     sjtu::vector<QueryTicketResult> res;
@@ -278,6 +284,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
 }
 void queryTransfer(const std::string &S,const std::string &T,int date,const std::string &cmp)
 {
+    // Timer timer(__func__);
     // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<"Get this transfer"<<std::endl;
     static sjtu::map<std::pair<int,int>,std::string> rhash;
     static sjtu::map<std::pair<int,int>,bool> S_sta,T_sta;

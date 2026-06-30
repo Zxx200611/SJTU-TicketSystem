@@ -1,5 +1,7 @@
 #pragma once
 
+#include<Timer.hpp>
+
 #include<BPlusTree.hpp>
 #include<Utilities.hpp>
 #include<Vector.hpp>

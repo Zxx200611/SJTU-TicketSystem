@@ -118,6 +118,8 @@ int main()
         }
         if(hd=="exit")
         {
+            // for(auto pr:time_used) std::cerr<<"Func "<<pr.first<<" uses "<<pr.second<<" ms"<<std::endl;
+
             std::cout<<"bye"<<std::endl;
             return 0;
         }

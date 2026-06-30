@@ -102,7 +102,7 @@ void MemoryRiver<T,Hash,N,M>::writeNode(Node<T,Hash,N,M> u,
   if (mem[u.pos % mr_siz].pos != u.pos && mem[u.pos % mr_siz].pos != 0) {
     fo.write(mem[u.pos % mr_siz].pos, &mem[u.pos % mr_siz]);
   }
-  fo.write(u.pos, &u);
+  if(u.pos>=fo.size()) fo.write(u.pos, &u);
   mem[u.pos % mr_siz] = u;
 }
 template <typename T, typename Hash,int N,int M>
@@ -388,14 +388,16 @@ bool BPlusTree<T,Hash,N,M>::remove(const T &t) noexcept {
 template <typename T, typename Hash,int N,int M>
 sjtu::vector<T> BPlusTree<T,Hash,N,M>::find(const HashResult &lh, const HashResult &rh) noexcept {
   std::pair<int, int> pr = lowerBound(lh);
-  // std::cout<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
+  // std::cerr<<"l at Node#"<<pr.first<<" 's "<<pr.second<<" th child"<<std::endl;
 
   sjtu::vector<T> res;
   for (Node<T,Hash,N,M> u(pr.first, fo, mr); u.pos; u = Node<T,Hash,N,M>(u.nxt, fo, mr)) {
     for (int i = (u.pos == pr.first ? pr.second : 0); i < u.ch_cnt; i++) {
       if (!HashResult::comp(u.ch_dat[i], rh))
       {
-        // std::cout<<"The first ge is Node #"<<u.pos<<"'s "<<i<<"th element"<<std::endl;
+        // std::cerr<<"The first ge is Node #"<<u.pos<<"'s "<<i<<"th element"<<std::endl;
+        // std::cerr<<u.ch_dat[i].t[0]<<" "<<u.ch_dat[i].t[1]<<std::endl;
+        // std::cerr<<rh.t[0]<<" "<<rh.t[1]<<std::endl;
         return res;
       }
 
