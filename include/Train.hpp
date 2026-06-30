@@ -3,6 +3,7 @@
 #include<Timer.hpp>
 
 #include<BPlusTree.hpp>
+#include<BPlusTree_old.hpp>
 #include<Utilities.hpp>
 #include<Vector.hpp>
 #include<utility>
@@ -43,12 +44,14 @@ public:
 
     inline StationTimeTrain();
     inline StationTimeTrain(const std::string &_station,int _date,int _time,const std::string&_train_id
-                    ,int _start_date,int _start_time,int _sta_id,int _s_time,int _s_price);
+                           ,int _start_date,int _start_time,int _sta_id,int _s_time,int _s_price);
+    inline static StationTimeTrain positiveInfinity();
+    inline static StationTimeTrain zero();
 };
-class STTHaashByStationAndTime
+class STTCompareByStationAndTime
 {
 public:
-    HashResult operator () (const StationTimeTrain &a);
+    bool operator () (const StationTimeTrain &a,const StationTimeTrain &b);
 };
 class QueryTicketResult
 {
@@ -71,7 +74,7 @@ public:
 };
 
 BPlusTree<Train,TrainHashByIdAndStationNum,80,501> Trains("Trains");
-BPlusTree<StationTimeTrain,STTHaashByStationAndTime,80,1001> Arriv("Arriv"),Depar("Depar");
+BPlusTree_old<StationTimeTrain,STTCompareByStationAndTime,80,501> Arriv("Arriv"),Depar("Depar");
 
 inline bool addTrain(const std::string &_train_id,int _station_num,int _seat_num
                     ,const std::string &_stations,const std::string &_prices,int _departure

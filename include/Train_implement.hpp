@@ -67,17 +67,21 @@ StationTimeTrain::StationTimeTrain(const std::string &_station,int _date,int _ti
     station_h=std::make_pair(utils::stringHash(_station,0),utils::stringHash(_station,1));
     train_id_h=std::make_pair(utils::stringHash(_train_id,0),utils::stringHash(_train_id,1));
 }
-
-HashResult STTHaashByStationAndTime::operator () (const StationTimeTrain &a)
+inline StationTimeTrain StationTimeTrain::positiveInfinity()
 {
-    HashResult res;
-    res.t[0]=a.station_h.first;
-    res.t[1]=a.station_h.second;
-    res.t[2]=a.date;
-    res.t[3]=a.time;
-    res.t[4]=a.train_id_h.first;
-    res.t[5]=a.train_id_h.second;
-    return res;
+    StationTimeTrain stt;
+    stt.station_h=stt.train_id_h=std::make_pair(INT_MAX,INT_MAX);
+    stt.date=stt.time=0;
+    return stt;
+}
+inline StationTimeTrain StationTimeTrain::zero(){return StationTimeTrain();}
+
+bool STTCompareByStationAndTime::operator() (const StationTimeTrain &a,const StationTimeTrain &b)
+{
+    if(a.station_h!=b.station_h) return a.station_h<b.station_h;
+    if(a.date!=b.date) return a.date<b.date;
+    if(a.time!=b.time) return a.time<b.time;
+    return a.train_id_h<b.train_id_h;
 }
 // StationTimeTrain*******************************************************************
 
@@ -203,9 +207,12 @@ bool queryTrain(const std::string &_train_id,int date)
              <<"xx-xx xx:xx "<<sp<<" x"<<std::endl;
     return 1;
 }
+long long QT_count=0,S_size=0,T_size=0;
 void queryTicket(const std::string &S,const std::string &T,int date,const std::string &cmp)
 {
     // Timer timer(__func__);
+
+    // Timer *timer2=new Timer("STT find part");
     sjtu::vector<StationTimeTrain> tmpS=Depar.find
     (
         StationTimeTrain(S,date,0,"",0,0,0,0,0),
@@ -216,7 +223,10 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
         StationTimeTrain(T,date+3,1440,"",0,0,0,0,0)
     );
+    // delete timer2;
+    QT_count++,S_size+=tmpS.size(),T_size+=tmpT.size();
 
+    // timer2=new Timer("Process part");
     static int pS[50010],pT[50010];
     for(int i=0;i<tmpS.size();i++) pS[i]=i;
     for(int i=0;i<tmpT.size();i++) pT[i]=i;
@@ -281,6 +291,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
                  <<res[x].price<<" "<<res[x].seat<<'\n';
     }
     std::cout.flush();
+    // delete timer2;
 }
 void queryTransfer(const std::string &S,const std::string &T,int date,const std::string &cmp)
 {

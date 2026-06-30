@@ -57,7 +57,7 @@ void sort(T *s,T *t,const Compare &comp)
 inline
 int stringHash(const std::string &s,int pid)
 {
-    Timer timer(__func__);
+    // Timer timer(__func__);
     int res=0;
     for(int i=0,w=1;i<s.size();i++,w=1ll*w*hash_base%hash_primes[pid])
     {
@@ -173,7 +173,7 @@ sjtu::vector<std::string> splitBy(const std::string &s,char c)
 inline
 void forward(int &date,int &time,int delta)
 {
-    int real_time=date*1440+time+delta;
+    long long real_time=1ll*date*1440+time+delta;
     date=real_time/1440,time=real_time%1440;
 }
 

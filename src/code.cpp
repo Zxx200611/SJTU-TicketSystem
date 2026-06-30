@@ -119,6 +119,7 @@ int main()
         if(hd=="exit")
         {
             // for(auto pr:time_used) std::cerr<<"Func "<<pr.first<<" uses "<<pr.second<<" ms"<<std::endl;
+            // if(QT_count) std::cerr<<"Avr s_size = "<<S_size/QT_count<<", avr t_size = "<<T_size/QT_count<<std::endl;
 
             std::cout<<"bye"<<std::endl;
             return 0;

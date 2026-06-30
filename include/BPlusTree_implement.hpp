@@ -103,11 +103,12 @@ void MemoryRiver<T,Hash,N,M>::writeNode(Node<T,Hash,N,M> u,
     fo.write(mem[u.pos % mr_siz].pos, &mem[u.pos % mr_siz]);
   }
   if(u.pos>=fo.size()) fo.write(u.pos, &u);
+  // fo.write(u.pos, &u);
   mem[u.pos % mr_siz] = u;
 }
 template <typename T, typename Hash,int N,int M>
 void MemoryRiver<T,Hash,N,M>::invalidate(int pos) noexcept {
-  mem[pos%mr_siz].pos=0;
+  if(pos==mem[pos%mr_siz].pos) mem[pos%mr_siz].pos=0;
 }
 // MR *************************************************************
 

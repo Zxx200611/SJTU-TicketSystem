@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.10)
+project(BPlusTree)
+
+# 使用 C++17 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# 设置默认构建类型为 Release（不定义 NDEBUG 以保留 assert）
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+endif()
+
+# 显式指定 Release 模式的优化标志为 -O2，去掉 -DNDEBUG，添加 Sanitizer 和调试信息
+# 并禁用 ubsan 的对齐检查
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fsanitize=address,undefined -fno-sanitize=alignment -g")
+
+# 添加可执行文件
+add_executable(code src/code.cpp)
+
+# 包含头文件目录
+target_include_directories(code PRIVATE include)
+
+# 为可执行文件添加 Sanitizer 的链接标志（与编译标志保持一致）
+target_link_options(code PRIVATE -fsanitize=address,undefined -fno-sanitize=alignment)
