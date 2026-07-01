@@ -39,7 +39,7 @@ public:
   int ch_pos[max_ch_cnt + 1];
   HashResult ch_dat[max_ch_cnt + 1];
 
-  static constexpr int memory_size =
+  static const int memory_size =
       4 + 4 + 4 + 4 + (max_ch_cnt + 1) * 4 + (max_ch_cnt + 1) * HashResult::memory_size;
 
   explicit Node() noexcept;

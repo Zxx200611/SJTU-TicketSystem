@@ -28,7 +28,7 @@ public:
     inline HashResult operator () (const User &a);
 };
 
-BPlusTree<User,UserHashByUsernameAndPriv,80,200> Users("Users");
+BPlusTree<User,UserHashByUsernameAndPriv,80,51> Users("Users");
 sjtu::map<std::string,bool> login_list;
 
 inline bool addUser(const std::string &c,const std::string &u,const std::string &_passwd

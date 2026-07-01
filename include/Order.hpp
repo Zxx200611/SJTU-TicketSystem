@@ -42,8 +42,8 @@ public:
     inline HashResult operator () (const SemiOrder &a);
 };
 
-BPlusTree<Order,OrderHashByUsernameAndTag,80,301> Orders("Orders");
-BPlusTree<SemiOrder,SOHashByTrainidAndDeparDate,80,151> Pend("Pend");
+BPlusTree<Order,OrderHashByUsernameAndTag,80,51> Orders("Orders");
+BPlusTree<SemiOrder,SOHashByTrainidAndDeparDate,80,51> Pend("Pend");
 
 inline void queryOrder(const std::string &username);
 inline void buyTicket(const std::string &username,const std::string &train_id,const std::string &S

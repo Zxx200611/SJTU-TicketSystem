@@ -125,6 +125,7 @@ int timeDelta(int s_date,int s_time,int t_date,int t_time)
 inline
 std::string parse(const std::string &s,sjtu::map<std::string,std::string> &M)
 {
+    // Timer timer(__func__);
     // std::cout<<"Parsing string "<<s<<std::endl;
     M.clear();
 

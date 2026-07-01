@@ -6,19 +6,8 @@
 
 int main()
 {
-    // ProfilerStart("profile.out");
     std::ios::sync_with_stdio(0);
     std::cin.tie(0),std::cout.tie(0);
-
-    // dbg<<"Dbg in"<<std::endl;
-    // int p[100];
-    // for(int i=0;i<5;i++) p[i]=5-i;
-    // utils::sort(p,p+5,[&](int a,int b){return a<b;});
-    // for(int i=0;i<5;i++) std::cout<<p[i]<<" ";
-    // std::cout<<std::endl;
-
-    // std::cout<<utils::stringToDate("07-12")<<std::endl;
-    // int r=addTrain("LeavesofGrass",13,28660,"北京市|重庆市南川市|吉林省图们市|浙江省瑞安市|福建省莆田市|山东省栖霞市|福建省漳州市|河北省晋州市|广东省罗定市|四川省德阳市|天津市|广东省江门市|河北省石家庄市","236|3790|4547|3102|4803|738|2007|256|1567|1607|359|3041",827,"134|33|193|91|159|92|197|45|166|27|79|55","5|3|9|8|10|9|5|8|10|4|10","07-12|08-16",'Z');
 
     // std::cout<<"Init complete"<<std::endl;
     for(int _=1;;_++)
@@ -127,5 +116,4 @@ int main()
         // std::cout<<"Done"<<std::endl;
         // Users.debugPrint();
     }
-    // ProfilerStop();
 }

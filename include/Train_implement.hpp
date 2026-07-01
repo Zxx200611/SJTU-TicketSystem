@@ -153,7 +153,7 @@ inline bool deleteTrain(const std::string &_train_id)
 }
 inline bool releaseTrain(const std::string &_train_id)
 {
-    // Timer timer(__func__);
+    Timer timer(__func__);
     Train u;
     int u_pos=Trains.findFirstGe(Train(_train_id,0,0,"","",0,"","","",0),u);
     if(u_pos==-1||u.train_id!=_train_id) return 0;
@@ -204,7 +204,7 @@ bool queryTrain(const std::string &_train_id,int date)
         if(i!=u.station_num-1) sp+=u.prices[i];
     }
     std::cout<<u.stations[u.station_num-1]<<" "<<utils::intToDate(d)<<" "<<utils::intToTime(t)<<" -> "
-             <<"xx-xx xx:xx "<<sp<<" x"<<std::endl;
+             <<"xx-xx xx:xx "<<sp<<" x\n";
     return 1;
 }
 long long QT_count=0,S_size=0,T_size=0;
@@ -226,7 +226,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     // delete timer2;
     QT_count++,S_size+=tmpS.size(),T_size+=tmpT.size();
 
-    // timer2=new Timer("Process part");
+    // timer2=new Timer("Sort part");
     static int pS[50010],pT[50010];
     for(int i=0;i<tmpS.size();i++) pS[i]=i;
     for(int i=0;i<tmpT.size();i++) pT[i]=i;
@@ -242,7 +242,9 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
         if(tmpT[a].start_date!=tmpT[b].start_date) return tmpT[a].start_date<tmpT[b].start_date;
         return a<b;
     });
+    // delete timer2;
 
+    // timer2=new Timer("Process part");
     sjtu::vector<QueryTicketResult> res;
     for(int i=0,j=0;i<tmpS.size();i++)
     {
@@ -273,6 +275,8 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
             ));
         }
     }
+    // delete timer2;
+    // timer2=new Timer("Output part");
 
     static int p[50010];
     for(int i=0;i<res.size();i++) p[i]=i;
@@ -290,7 +294,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
                  <<res[x].t<<" "<<utils::intToDate(res[x].t_date)<<" "<<utils::intToTime(res[x].t_time)<<" "
                  <<res[x].price<<" "<<res[x].seat<<'\n';
     }
-    std::cout.flush();
+    // std::cout.flush();
     // delete timer2;
 }
 void queryTransfer(const std::string &S,const std::string &T,int date,const std::string &cmp)
@@ -512,7 +516,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     // if(S=="广东省惠阳市"&&T=="江苏省高邮市") std::cerr<<utils::intToDate(mnv.ta.t_date)<<std::endl;
     if(mnv.ta.price==(int)1e8)
     {
-        std::cout<<0<<std::endl;
+        std::cout<<0<<'\n';
         return;
     }
 
