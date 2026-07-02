@@ -213,15 +213,19 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     // Timer timer(__func__);
 
     // Timer *timer2=new Timer("STT find part");
-    sjtu::vector<StationTimeTrain> tmpS=Depar.find
+    static sjtu::vector<StationTimeTrain> tmpS,tmpT;
+    tmpS.clear(),tmpT.clear();
+    Depar.find
     (
         StationTimeTrain(S,date,0,"",0,0,0,0,0),
-        StationTimeTrain(S,date,1440,"",0,0,0,0,0)
+        StationTimeTrain(S,date,1440,"",0,0,0,0,0),
+        tmpS
     );
-    sjtu::vector<StationTimeTrain> tmpT=Arriv.find
+    Arriv.find
     (
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
-        StationTimeTrain(T,date+3,1440,"",0,0,0,0,0)
+        StationTimeTrain(T,date+3,1440,"",0,0,0,0,0),
+        tmpT
     );
     // delete timer2;
     QT_count++,S_size+=tmpS.size(),T_size+=tmpT.size();
@@ -307,10 +311,13 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
     S_sta.clear(),S_pri.clear(),S_tme.clear(),S_id.clear();
     T_sta.clear(),T_pri.clear(),T_tme.clear(),T_id.clear();
 
-    sjtu::vector<StationTimeTrain> tmp=Depar.find
+    static sjtu::vector<StationTimeTrain> tmp;
+    tmp.clear();
+    Depar.find
     (
         StationTimeTrain(S,date,0,"",0,0,0,0,0),
-        StationTimeTrain(S,date,1440,"",0,0,0,0,0)
+        StationTimeTrain(S,date,1440,"",0,0,0,0,0),
+        tmp
     );
     // std::cout<<"Depar size : "<<tmp.size()<<std::endl;
     for(const StationTimeTrain &x:tmp)
@@ -332,10 +339,12 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         S_pri[x.train_id_h]=x.s_price,S_tme[x.train_id_h]=x.s_time,S_id[x.train_id_h]=x.sta_id;
     }
 
-    tmp=Arriv.find
+    tmp.clear();
+    Arriv.find
     (
         StationTimeTrain(T,date,0,"",0,0,0,0,0),
-        StationTimeTrain(T,200,0,"",0,0,0,0,0)
+        StationTimeTrain(T,200,0,"",0,0,0,0,0),
+        tmp
     );
     for(const StationTimeTrain &x:tmp)
     {
@@ -426,10 +435,13 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
         if(pr.second==0||T_sta[pr.first]==0||(pr.first.first==utils::stringHash(S,0)&&pr.first.second==utils::stringHash(S,1))||(pr.first.first==utils::stringHash(T,0)&&pr.first.second==utils::stringHash(T,1))) continue;
         const std::string &sta_name=rhash[pr.first];
 
-        sjtu::vector<StationTimeTrain> A,tmpA=Arriv.find
+        static sjtu::vector<StationTimeTrain> A,tmpA;
+        A.clear(),tmpA.clear();
+        Arriv.find
         (
             StationTimeTrain(sta_name,date,0,"",0,0,0,0,0),
-            StationTimeTrain(sta_name,date+3,1440,"",0,0,0,0,0)
+            StationTimeTrain(sta_name,date+3,1440,"",0,0,0,0,0),
+            tmpA
         );
         for(const StationTimeTrain &stt:tmpA)
         {
@@ -441,10 +453,13 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             A.push_back(stt);
         }
 
-        sjtu::vector<StationTimeTrain> B,tmpB=Depar.find
+        static sjtu::vector<StationTimeTrain> B,tmpB;
+        B.clear(),tmpB.clear();
+        Depar.find
         (
             StationTimeTrain(sta_name,date,0,"",0,0,0,0,0),
-            StationTimeTrain(sta_name,200,0,"",0,0,0,0,0)
+            StationTimeTrain(sta_name,200,0,"",0,0,0,0,0),
+            tmpB
         );
         for(const StationTimeTrain &stt:tmpB)
         {

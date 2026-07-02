@@ -377,6 +377,21 @@ sjtu::vector<T> BPlusTree_old<T,Comp,N,M>::find(const T &l, const T &r) noexcept
   return res;
 }
 template <typename T, typename Comp,int N,int M>
+void BPlusTree_old<T,Comp,N,M>::find(const T &l, const T &r,sjtu::vector<T> &res) noexcept {
+  std::pair<int, int> pr = lowerBound(l);
+
+  for (Node_old<T,Comp,N,M> u(pr.first, fo, mr); u.pos; u = Node_old<T,Comp,N,M>(u.nxt, fo, mr)) {
+    for (int i = (u.pos == pr.first ? pr.second : 0); i < u.ch_cnt; i++) {
+      if (!comp(u.ch_dat[i], r))
+      {
+        return;
+      }
+
+      res.push_back(u.ch_dat[i]);
+    }
+  }
+}
+template <typename T, typename Comp,int N,int M>
 int BPlusTree_old<T,Comp,N,M>::size() noexcept {
   return siz;
 }

@@ -65,6 +65,7 @@ public:
   inline void insert(const T &t) noexcept;
   inline bool remove(const T &t) noexcept;
   inline sjtu::vector<T> find(const T &l, const T &r) noexcept; // find [l,r)
+  inline void find(const T &l, const T &r,sjtu::vector<T> &res) noexcept; // find [l,r)
   inline int size() noexcept;
 
   inline void debugPrint(std::ostream &os) noexcept;
