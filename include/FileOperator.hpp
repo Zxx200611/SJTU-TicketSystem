@@ -42,6 +42,15 @@ public:
         pwrite(fd, reinterpret_cast<const char*>(t), sizeof(bool), pos + header_size);
         update_size(pos + header_size, sizeof(bool));
     }
+    inline void read2Int(int pos, int *t, int count) noexcept {
+        int len = count * sizeof(int);
+        pread(fd, t, len, pos + header_size);
+    }
+
+    inline void read2Char(int pos, char *t, int count) noexcept {
+        int len = count * sizeof(char);
+        pread(fd, t, len, pos + header_size);
+    }
     inline void write2(int pos, int *t, int count) noexcept {
         int len = count * sizeof(int);
         pwrite(fd, reinterpret_cast<const char*>(t), len, pos + header_size);

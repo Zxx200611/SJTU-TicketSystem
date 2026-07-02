@@ -227,7 +227,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     QT_count++,S_size+=tmpS.size(),T_size+=tmpT.size();
 
     // timer2=new Timer("Sort part");
-    static int pS[50010],pT[50010];
+    static int pS[10010],pT[10010];
     for(int i=0;i<tmpS.size();i++) pS[i]=i;
     for(int i=0;i<tmpT.size();i++) pT[i]=i;
     utils::sort(pS,pS+tmpS.size(),[&](int a,int b)
@@ -278,7 +278,7 @@ void queryTicket(const std::string &S,const std::string &T,int date,const std::s
     // delete timer2;
     // timer2=new Timer("Output part");
 
-    static int p[50010];
+    static int p[10010];
     for(int i=0;i<res.size();i++) p[i]=i;
     std::function<bool(int,int)> comp;
     if(cmp=="time") comp=[&](int a,int b)->bool {return res[a].time ==res[b].time ?strcmp(res[a].train_id,res[b].train_id)<0:res[a].time <res[b].time ;};
@@ -455,7 +455,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
 
         if(A.empty()||B.empty()) continue;
 
-        static int pA[50010],pB[50010];
+        static int pA[10010],pB[10010];
         for(int i=0;i<A.size();i++) pA[i]=i;
         for(int i=0;i<B.size();i++) pB[i]=i;
         utils::sort(pA,pA+A.size(),[&](int a,int b)
@@ -469,7 +469,7 @@ void queryTransfer(const std::string &S,const std::string &T,int date,const std:
             return B[a].time<B[b].time;
         });
 
-        static int suf_mnp[50010][2];
+        static int suf_mnp[10010][2];
         suf_mnp[B.size()][0]=suf_mnp[B.size()][1]=B.size();
         for(int i=B.size()-1;i>=0;i--)
         {

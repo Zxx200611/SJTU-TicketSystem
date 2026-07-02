@@ -95,7 +95,7 @@ public:
   inline int findFirstGe(const HashResult &h,T &res) noexcept;
   inline int findFirstGe(const T &t,T &res) noexcept;
   inline int size() noexcept;
-  inline int locate(const HashResult &h) noexcept;
+  inline int locateFirstGe(const HashResult &h) noexcept;
 
 
   inline void debugPrint(std::ostream &os) noexcept;

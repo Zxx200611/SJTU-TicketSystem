@@ -461,11 +461,10 @@ void BPlusTree<T,Hash,N,M>::innerDebugPrint(int uid,std::ostream &os) noexcept {
     innerDebugPrint(u.ch_pos[i],os);
 }
 template <typename T, typename Hash,int N,int M>
-int BPlusTree<T,Hash,N,M>::locate(const HashResult &h) noexcept
+int BPlusTree<T,Hash,N,M>::locateFirstGe(const HashResult &h) noexcept
 {
   std::pair<int, int> pr = lowerBound(h);
   Node<T,Hash,N,M> u(pr.first, fo, mr);
-  if(HashResult::comp(h,u.ch_dat[pr.second])) return -1;
   return u.ch_dat[pr.second].pos;
 }
 
