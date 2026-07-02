@@ -29,7 +29,7 @@ public:
 };
 
 BPlusTree<User,UserHashByUsernameAndPriv,80,51> Users("Users");
-sjtu::map<std::string,bool> login_list;
+sjtu::map<std::pair<int,int>,bool> login_list;
 
 inline bool addUser(const std::string &c,const std::string &u,const std::string &_passwd
                    ,const std::string &_chinese_name,const std::string &_mail,int _privilege);

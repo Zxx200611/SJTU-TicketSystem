@@ -46,7 +46,7 @@ inline bool addUser(const std::string &c,const std::string &u,const std::string 
         return 1;
     }
 
-    if(login_list[c]==0) return 0;
+    if(login_list[utils::stringHashPair(c)]==0) return 0;
     sjtu::vector<User> tmp=Users.find(User(c,-1),User(c,11));
     if(tmp.size()!=1) return 0;
     
@@ -60,7 +60,7 @@ inline bool addUser(const std::string &c,const std::string &u,const std::string 
 inline bool login(const std::string &_username,const std::string &_passwd)
 {
     // Timer timer(__func__);
-    if(login_list[_username]==1) return 0;
+    if(login_list[utils::stringHashPair(_username)]==1) return 0;
     sjtu::vector<User> tmp=Users.find(User(_username,-1),User(_username,11));
     // std::cout<<"User "<<_username<<" logging in, find "<<tmp.size()<<" users"<<std::endl;
     if(tmp.size()!=1) return 0;
@@ -70,20 +70,20 @@ inline bool login(const std::string &_username,const std::string &_passwd)
         return 0;
     }
 
-    login_list[_username]=1;
+    login_list[utils::stringHashPair(_username)]=1;
     return 1;
 }
 inline bool logout(const std::string &_username)
 {
     // Timer timer(__func__);
-    if(login_list[_username]==0) return 0;
-    login_list[_username]=0;
+    if(login_list[utils::stringHashPair(_username)]==0) return 0;
+    login_list[utils::stringHashPair(_username)]=0;
     return 1;
 }
 inline bool queryProfile(const std::string &c,const std::string &u)
 {
     // Timer timer(__func__);
-    if(login_list[c]==0) return 0;
+    if(login_list[utils::stringHashPair(c)]==0) return 0;
     User C,U;
     if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;
     if(Users.findFirstGe(User(u,-1),U)==-1||U.username!=u) return 0;
@@ -99,7 +99,7 @@ inline bool modifyProfile(const std::string &c,const std::string &u,const std::s
                          ,const std::string &_chinese_name,const std::string &_mail,int _privilege)
 {
     // Timer timer(__func__);
-    if(login_list[c]==0) return 0;
+    if(login_list[utils::stringHashPair(c)]==0) return 0;
     User C,U;
     if(Users.findFirstGe(User(c,-1),C)==-1||C.username!=c) return 0;
     if(Users.findFirstGe(User(u,-1),U)==-1||U.username!=u) return 0;

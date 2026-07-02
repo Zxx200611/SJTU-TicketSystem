@@ -55,7 +55,7 @@ HashResult SOHashByTrainidAndDeparDate::operator () (const SemiOrder &a)
 void queryOrder(const std::string &username)
 {
     // Timer timer(__func__);
-    if(login_list[username]==0)
+    if(login_list[utils::stringHashPair(username)]==0)
     {
         std::cout<<"-1\n";
         return;
@@ -85,7 +85,7 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
               ,const std::string &T,int date,int count,bool allow_queue,int tag)
 {
     // Timer timer(__func__);
-    if(login_list[username]==0)
+    if(login_list[utils::stringHashPair(username)]==0)
     {
         std::cout<<"-1\n";
         return;
@@ -164,7 +164,7 @@ void buyTicket(const std::string &username,const std::string &train_id,const std
 void refundTicket(const std::string &username,int n)
 {
     // Timer timer(__func__);
-    if(login_list[username]==0)
+    if(login_list[utils::stringHashPair(username)]==0)
     {
         std::cout<<"-1\n";
         return;

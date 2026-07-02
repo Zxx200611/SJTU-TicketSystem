@@ -8,6 +8,7 @@
 #include<cassert>
 #include<cctype>
 #include<functional>
+#include<utility>
 
 const int chinese_character_size=3;
 #pragma pack(1)
@@ -64,6 +65,11 @@ int stringHash(const std::string &s,int pid)
         res=(res+1ll*w*(s[i]+1)%hash_primes[pid])%hash_primes[pid];
     }
     return res;
+}
+inline
+std::pair<int,int> stringHashPair(const std::string &s)
+{
+    return std::make_pair(stringHash(s,0),stringHash(s,1));
 }
 
 inline
